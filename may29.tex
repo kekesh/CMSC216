@@ -1,0 +1,64 @@
+\section{Wednesday, May 29, 2019}
+Last time, we analyzed a sample C program. It's important to know that returning $0$ in the \verb!main()! function is independent of the \verb!void! that appears in the main. That is, even if our header is \verb!int main(void)!, \textit{we will still return $0$ at the end of the function}.
+
+\subsection{More Unix Commands}
+Some more Unix: \begin{itemize}
+    \item The \verb!cp! command makes a copy of a file from a source to a destination. Some options are \verb!-a!, which allows us to preserve attributes, like timestamp modified. Also, \verb!-v! explains what's being done, while \verb!-r! copies recursively.   
+    \item The \verb!-rm! command removes a file.
+    \item The \verb!-mv! command renames a file or moves a file/directory to another directory. For example...
+    \begin{itemize}
+        \item \verb!-mv f1 f2! renames file \verb!f1! to \verb!f2!. 
+        \item \verb!-mv f1 d1! moves the file \verb!f1! to the directory \verb!d1!.
+        \item Finally, \verb!-mv d1 d2! moves the directory \verb!d1! to \verb!d2!.  
+        \item The \verb!-cat! command displays the contents of a file.
+    \end{itemize}
+\end{itemize}
+In Unix, we can create \vocab{aliases}, which are shortcut commands to use a longer command. Users can use the alias name to run the longer command while typing less. Without any arguments, the \verb!alias! command prints a list of defined aliases. A new alias is defined by assigning a string with the command to a name. We can add an alias by modifying the \verb!.alias! file in the home directory of Grace.
+%sprcoredump
+
+\subsection{Compilation Stages of a C Program}
+C programs need to be compiled before they can be executed. What happens when we compile a C program? There are \vocab{three compilation stages}: \begin{enumerate}
+    \item \textbf{Preprocessor Stage:} This stage is used to verify that program parts sees declarations that they need. Also, statements starting with a \verb!#! are processes (for example, 
+    \item \textbf{Translation:} In this stage, 
+\end{enumerate}
+
+
+\subsection{Variables in C}
+There are a lot of data types in C, some of which include \verb!char, short, int, long int, float, double!, etc. In Java, data types take up the same amount of space, independent of the system they're run on. This is not true in C; the minimum size of various data types are not necessarily the same size on grace. We do not need to memorize the sizes of various data types; however, it is important to know that a \verb!char! data type is an exception to this rule: it always takes one byte. \\
+
+Also unlike Java, there is no maximum size for a type; however, the following inequalities hold:
+\begin{center}
+\verb!sizeof(short)! $\leq$ \verb!sizeof(int)! $\leq$ \verb!sizeof(long)! \\[0.7em]
+\verb!sizeof(float)! $\leq$ \verb!sizeof(double)! $\leq$ \verb!sizeof(long double)!
+\end{center}
+
+Suffixes allow us to specify a number of a given type. For instance, \verb!30000! is of type \verb!int!, whereas \verb!30000L! is of type \verb!long!.
+
+
+
+In C, there is no default \verb!boolean! data types; anything with value $0$ is considered false, whereas any other value is considered true. However, we can use integers to represent booleans with \verb!true! mapping to $1$ and \verb!false! to $0$.
+
+Consider the following code example:
+
+
+
+\lstset{
+caption=Conditional Example
+}
+\begin{center}
+\lstinputlisting[language=c]{may2901.cpp}
+\end{center}
+
+The print statement in conditional executes successfully for reasons described above.
+
+
+
+
+
+
+
+
+
+
+
+% garbage or trash

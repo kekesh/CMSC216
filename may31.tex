@@ -1,0 +1,84 @@
+\section{Friday, May 31, 2019}
+
+\subsection{printf() and scanf()}
+
+When we're using \verb!printf()! to print something, we just print anything that's in the quotations. For instance, the line \verb!printf("Hello");! would print ``Hello,'' as we desire. 
+
+
+To print variables, we use \vocab{conversion specifications}, which begin with the \verb!%!. These are just placeholders representing a value to be filled in during printed. More specifically, the \verb!%! \textit{specifies} how the value is \textit{converted} from its internal binary form to characters. For instance, the conversion specification \verb!%d! specifies that \verb!printf! is to convert an \verb!int! value from binary to a string of decimal digits. In summary,
+\begin{itemize}
+    \item \verb!%d! for integers,
+    \item \verb!%c! for chars,
+    \item \verb!%f! for floats,
+    \item \verb!%s! for strings (null-terminated char array)
+    \item \verb!%x! for hexadecimal form
+    \item \verb!%e! for exponential form
+    \item \verb!%u! for unsigned integer.
+\end{itemize}
+
+For example, the following code segment will print \verb!i = 10!. 
+
+\lstset{
+caption=Printing a Variable
+}
+\begin{center}
+\lstinputlisting[language=c]{may3101.cpp}
+\end{center}
+
+
+
+\verb!scanf()! is used for user input and it works similarly. The  introduce the \vocab{address} operator, which is denoted by a \verb!&!. The address operator is a unitary operator which, as its name specifies, returns the memory address of the variable on which it is acting on. Here's an example:
+
+
+\lstset{
+caption=Reading Variables
+}
+\begin{center}
+\lstinputlisting[language=c]{may3102.cpp}
+\end{center}
+
+Now suppose that the user enters the line \begin{center}
+\verb!1 -20 .3 -4.0e3!.
+\end{center}
+
+The code above will convert its characters to the numbers they represent and assign the values $1, -20, 0.3, -4000.0$ to the four variables. 
+
+
+There are two important things that the programmer should check when using \verb!scanf()!: \begin{enumerate}
+    \item Check that the conversion specifications match the number of input variables and that each conversion is appropriate for the corresponding variable (as should also be done with \verb!printf()!. Since the compiler doesn't necessarily have to check for mismatches, there won't be any warning.
+    \item Another trap involves the \verb!&! symbol, which should precede each variable in a \verb!scanf! call. Forgetting to put it can lead to unpredictable results. It is wrong to use the address-of operator in a printf() statement. 
+\end{enumerate}
+
+% A char is an integer!
+
+A \vocab{segmentation fault} error occurs when the program attempts to access an area of memory that it should not be accessing. Why is it called a segmentation fault? Because the content of memory at the time of crash is stored into a \vocab{core file.}
+
+
+
+There are some more problems that can occur with \verb!scanf()! and \verb!printf()!.
+
+
+When \verb!scanf()! is called, it starts processing the information in the inputted string, from left to right. For each conversion specification in the format string, \verb!scanf()! attempts to locate an item of the appropriate type in the input data, skipping any blank space if necessary.
+
+% A scanf starting with \n.
+
+
+
+
+\subsection{Control Statements}
+C has \verb!if/else, for, do-while,! and \verb!switch! statements, just like in Java. But due to the compiler flags in our submit server, we won't be allowed to declare variables in the \verb!for loop! header. 
+
+There's also \verb!break! and \verb!continue!, but they are bad practice and shouldn't be used often.
+
+
+\subsection{Functions}
+C functions have the following format to create a function \verb!returnType functionName(parameter list) { ... }! Just like in Java, to call a function, we just write \verb!functionName(argument list);!. 
+
+However, if the function appears after the main, then we need to do something called \vocab{function prototyping}, which is just declaring the function before the main. This isn't necessary if we implement the function before the main, though. Function prototypes don't actually need the name of the variable, but it's easier to read with them.
+
+
+In C, variables are passed in \textbf{by value}. This is different from Java, in which variables are passed in by reference. Some other things that are similar/different are: \begin{itemize}
+    \item We can have recursion in C.
+    \item We can \textbf{not} have function overloading. In particular, we can point out that \verb!printf! and \verb!scanf! are not overloaded functions; they refer to the same function!
+\end{itemize}
+

@@ -1,0 +1,52 @@
+\section{Tuesday, May 28, 2019}
+\subsection{Logistics}
+\begin{enumerate}
+\item All lectures are recorded and posted online.
+\item No pop-quizzes, no collaboration on projects.
+\item Website sign-in: cmsc216/sprcoredump.
+\item Office-hours are immediately after class in IRB $2210$.
+\item Everybody gets an Arduino which will be used later in the course. 
+\item This class isn't curved.
+\end{enumerate}
+
+\newcommand{\ra}{\rightarrow}
+\subsection{Basic Unix Commands}
+Unix has lots of commands, but we want to focus first on the ones that'll let us write and execute C programs: 
+\begin{itemize}
+    \item \verb!pwd! $\ra$  displays your current directory.
+    \item \verb!ls! $\ra$ displays the files/directories in the current directory.
+    \begin{itemize}
+        \item \verb!ls -al! $\ra$ lists all of the files and directories, including hidden ones
+        \item \verb!ls -F! $\ra$ identifies directories by listing them with a $/$.
+    \end{itemize}
+    \item \verb!cd! $\ra$ change directory to the inputted parameter.
+\end{itemize}
+% Other easy unix stuff.  
+% The 216 Public folder is where we'll be provided information
+% Do work in the 216 folder.
+
+% Set-up this:         /afs/glue/class/summer12019/cmsc/216/0101/public/bin/
+
+\subsection{Introduction to C Programming}
+In CMSC131 and 132, we learned Java. Unlike Java, \textit{C is not object-oriented}; it has no concept of classes, objects, polymorphism, or inheritance. However, C can be used to implement some object-oriented concepts, like polymorphism or encapsulation. Consider the following program: 
+
+
+\lstset{
+caption=A First Program
+}
+\lstinputlisting[language=c]{may2801.cpp}
+
+How does this program work? 
+\begin{itemize}
+    \item The \verb!#include! allows the compiler to check argument types. It can compile without declaration, though the compiler will warn you. 
+    \item Like Java, C provides a definition of the \verb!main()! function, where all C programs begin. 
+    \item We return from \verb!main()! to end the program. For standard practice, we return $0$ to signal that everything worked out fine. 
+\end{itemize}
+
+Now, let's say we want to run this program. How can we do this? C programs need to be compiled before they can be executed. With the \verb!gcc! compiler, a very simple compilation command is \verb!gcc file.c!, from which we can run the executable by just typing $\verb!./file!$. 
+
+Some more compilation options are summarized below: \begin{itemize}
+    \item \verb!-g! enables debugging
+    \item \verb!-Wall! warns about common things that might be a problem.
+    \item \verb!-o filename! places an executable in the file name.
+\end{itemize}

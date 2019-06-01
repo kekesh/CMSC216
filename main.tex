@@ -1,0 +1,105 @@
+\documentclass[english, 10pt]{article}
+\usepackage[sexy]{evan}
+\usepackage{inconsolata}
+\usepackage[shellescape]{gmp}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{xcolor}
+\allowdisplaybreaks%
+\newcommand{\thiscoursecode}{CMSC 216}
+\newcommand{\thiscoursename}{Introduction to Computer Systems}
+\newcommand{\thisprof}{Dr.\ Nelson Padua-Perez}
+\newcommand{\me}{Ekesh Kumar}
+\author{Ekesh Kumar\thanks{Email: \mailto{0ekesh@gmail.com}}}
+\newcommand{\thisterm}{Summer 2019}
+\newcommand{\website}{http://www.cs.umd.edu/class/summer2019/cmsc216/}%chktex 8
+\usepackage{ifpdf}
+\ifpdf%
+\DeclareGraphicsRule{*}{mps}{*}{}
+\fi
+% \listfiles
+% \VerbEnvir{align tikzpicture algorithm}
+%%%Headers
+\lhead{\textbf{\me} \\ \textbf{\thisprof}}
+\rhead{\textbf{\thiscoursename} \\ \textbf{\thisterm}}
+
+
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    language=C
+}
+
+
+%%%%% TITLE %%%%%
+\newcommand{\notefront}{%
+\pagenumbering{arabic}
+\begin{center}
+{\small}
+\textbf{\Huge{\noun{\thiscoursecode}}}
+{\Huge \par}
+{\Large{\noun{\thiscoursename}}}\\
+\vspace{0.1in}
+\vspace{0in}\includegraphics[scale=0.3]{umd_cs.jpg} \\
+\vspace{0.1in}{\noun\me} \\
+{\noun\thisprof} \ $\bullet$ \ {\noun\thisterm} \ $\bullet$ \ {\noun{University of Maryland}} \\
+{\ttfamily \url{\website}} \\
+\end{center}
+}
+
+ \tikzstyle{class}=[
+    rectangle,
+    draw=black,
+    text centered,
+    anchor=north,
+    text=black,
+    text width=2cm,
+    shading=axis,
+    bottom color={rgb:red,222;green,222;blue,222},
+    top color=white,shading angle=45]
+%% End of
+
+\begin{document}\thispagestyle{empty}
+% \lstinputlisting[language=c]
+  \notefront % IDK why it's giving error. ignore for now
+  \tocandfigures
+  
+  \lstset{
+  basicstyle=\footnotesize, frame=tb,
+  xleftmargin=.2\textwidth, xrightmargin=.2\textwidth
+}
+
+
+% Change section headers
+% \titleformat{\section}
+%   {\Large\scshape}{\thesection}{1em}{}
+% \titleformat{\subsection}
+%   {\large\scshape}{\thesubsection}{1em}{}
+
+%% End of setup.
+
+\include{may28}
+\include{may29}
+\include{may31}
+
+\end{document}
