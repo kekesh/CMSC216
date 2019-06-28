@@ -1,0 +1,25 @@
+\section{Thursday, June 27, 2019}
+\subsection{Memcpy and Memset}
+The \verb!void *memcpy(void * destination, const void * source, size_t num)! function is really similar to the \verb!strcpy()! function. The function \verb!memcpy()!| is used to copy a specified number of bytes from one memory to another, whereas \verb!strcpy()! copies the contents of one string into another. Also, \verb!strcpy()! works exclusively with strings, but \verb!memcpy()! works with any type of data.
+
+
+Another function is \verb!void * memset (void * ptr, int value, size_t num)!, which sets the first \textit{num} bytes to the block of memory pointed to by \textit{ptr}.
+
+For example, consider the following code:
+    
+    \lstset{
+    caption=Memset and Memcpy}
+    \begin{center}
+    \lstinputlisting[language=c]{june27/june2701.c}\label{Memset and Memcpy}
+    \end{center}
+
+Upon running the code, Line $27$ copies the contents of \verb!roster! to the destination \verb!copy!. Hence, the print statements on Lines $26$ and $28$ print out the exact same thing. Also, the \verb!memset! cal on Line $31$ sets the first half of the elements of \verb!name! equal to \verb!'a'!. Consequently, the print statement on Line $33$ prints fourty \verb!a!'s.
+
+
+\subsection{Representing Characters}
+The most common formats of representing characters are listed below: \begin{enumerate}
+    \item \vocab{ASCII} is the most commonly used format; the capital letters are assigned numbers from $65-90$, and the lowercase letters are assigned letters from $97-122$. 
+    \item \vocab{Unicode} is another common format. It stands for Unicode Transformation Format, and there are a few different versions. UTF-32 allows us to represent any character in any language (used by the Government), UTF-16 is the more popular, and UTF-8 provides backwards compatibility with ASCII (popular on the web).
+\end{enumerate}
+
+

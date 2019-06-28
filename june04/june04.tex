@@ -1,0 +1,27 @@
+\section{Tuesday, June 4, 2019}
+The \vocab{comma operator} in C is used to separate expressions. It's a binary operator that evaluates its first operand and discards the result. It then evaluates the second operand and returns this value. For instance, $\verb!y = (3, 4);!$ is a valid expression, which assigns the value $4$ to \verb!y!. 
+
+\subsection{Identifier Scopes}
+There are two main types of scopes in C: \begin{itemize}
+    \item The \vocab{block scope} contains variables declared inside a block, and it is only visible within the block. They do not exist outside of the block.
+    \item The \vocab{file scope} contains identifiers declared outside of any block; it is visible everywhere in the file \textbf{after} the declaration.
+\end{itemize}
+
+
+In the heap segment, text and data are constant from start to the end of the program. Execution follows the text segment of the memory. The data section contains global and static variables. Finally, the stack stores local variables and function parameters. There's some extra space in the heap which is used for dynamic memory allocation. The stack and heap grow in opposite directions, which is convenient to prevent overlapping. The heap goes up, and the stack goes down.
+
+
+There are two types of storage types: \begin{itemize}
+    \item \vocab{Automatic storage} occurs when the variable is transient. That is, after some time, it is no longer returned (e.g. when a function returns).
+    \item \vocab{Static storage} occurs when the variable exists throughout the entire life of the program. Global variables have this kind of storage, and initialization to static variables only occur once.
+\end{itemize}
+You can make a block-scoped variable static, which would be important when you're counting the number of times a function executes.
+
+
+
+A \vocab{linkage} is a property of an identifier that determines if multiple declarations of that identifier refer to the same object.  
+
+There are two main types of linkage that we should know about: \begin{enumerate}
+    \item \vocab{Static linkage} is performed in the final step of compilation; it is fast, and it can be referenced from anywhere within the same file.
+    \item \vocab{Dynamic linkage} is performed during runtime; it is slower; however, it can
+\end{enumerate}

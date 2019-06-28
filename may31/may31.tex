@@ -22,29 +22,34 @@ For example, the following code segment will print \verb!i = 10!.
 caption=Printing a Variable
 }
 \begin{center}
-\lstinputlisting[language=c]{may3101.cpp}
+\lstinputlisting[language=c]{may31/may3101.c}
 \end{center}
 
 
 
-\verb!scanf()! is used for user input and it works similarly. The  introduce the \vocab{address} operator, which is denoted by a \verb!&!. The address operator is a unitary operator which, as its name specifies, returns the memory address of the variable on which it is acting on. Here's an example:
+\verb!scanf()! is used for user input and it works similarly. The  introduce the \vocab{address} operator, which is denoted by a \verb!&!. The address operator is a unitary operator which, as its name specifies, returns the memory address of the variable on which it is acting on. When \verb!scanf()! is called, it starts processing the information in the inputted string, from left to right. For each conversion specification in the format string, \verb!scanf()! attempts to locate an item of the appropriate type in the input data, skipping any blank space if necessary. \\
+
+
+Here's an example:
 
 
 \lstset{
 caption=Reading Variables
 }
 \begin{center}
-\lstinputlisting[language=c]{may3102.cpp}
+\lstinputlisting[language=c]{may31/may3102.c}
 \end{center}
 
 Now suppose that the user enters the line \begin{center}
 \verb!1 -20 .3 -4.0e3!.
 \end{center}
-
 The code above will convert its characters to the numbers they represent and assign the values $1, -20, 0.3, -4000.0$ to the four variables. 
 
 
-There are two important things that the programmer should check when using \verb!scanf()!: \begin{enumerate}
+Finally, one should keep in mind that \verb!char! variables are actually just integers that map to an ASCII character. So something like \verb!printf("%c", 65)! works completely fine; it prints the character \verb!A!. \\
+
+% \subsection{Scanf() and}
+There are two important things that one should check when using \verb!scanf()! and \verb!printf()!: \begin{enumerate}
     \item Check that the conversion specifications match the number of input variables and that each conversion is appropriate for the corresponding variable (as should also be done with \verb!printf()!. Since the compiler doesn't necessarily have to check for mismatches, there won't be any warning.
     \item Another trap involves the \verb!&! symbol, which should precede each variable in a \verb!scanf! call. Forgetting to put it can lead to unpredictable results. It is wrong to use the address-of operator in a printf() statement. 
 \end{enumerate}
@@ -54,11 +59,12 @@ There are two important things that the programmer should check when using \verb
 A \vocab{segmentation fault} error occurs when the program attempts to access an area of memory that it should not be accessing. Why is it called a segmentation fault? Because the content of memory at the time of crash is stored into a \vocab{core file.}
 
 
+We can get segmentation faults when using \verb!scanf()! or \verb!printf()! if we try to read into or print some variable that we don't have access to. 
 
-There are some more problems that can occur with \verb!scanf()! and \verb!printf()!.
+
+% There are some more problems that can occur with \verb!scanf()! and \verb!printf()!.
 
 
-When \verb!scanf()! is called, it starts processing the information in the inputted string, from left to right. For each conversion specification in the format string, \verb!scanf()! attempts to locate an item of the appropriate type in the input data, skipping any blank space if necessary.
 
 % A scanf starting with \n.
 

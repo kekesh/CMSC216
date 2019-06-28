@@ -1,0 +1,70 @@
+\section{Wednesday, June 5, 2019}
+\subsection{Invalid Uses of Pointers}
+
+Consider the following code segment:
+
+\lstset{
+caption=Incorrect Pointer Usage
+}
+\begin{center}
+\lstinputlisting[language=c]{june05/june0501.c}\label{pointers:0601}
+\end{center}
+
+This is wrong, and it might generate a segmentation fault error. Why? We need $p$ to be associated with an area of memory that is valid. 
+
+A quick fix is to initialize a variable, and assign $p$ to the memory address of that variable. For example, the code segment below is correct, and it will print $200$.
+
+\lstset{
+caption=Correct Pointer Usage
+}
+\begin{center}
+\lstinputlisting[language=c]{june05/june0502.c}
+\end{center}
+
+The first code segment doesn't work correctly because the pointer is not initialized. Pretty much, we've created a pointer to "anywhere you want," which can be the address of some other variable, or some nonexistent memory. 
+
+
+When you have a program in C, there are four areas of memory: the \vocab{stack}, \vocab{heap}, \vocab{data}, and \vocab{code}. If some amount of memory is allocated for a function process, that memory becomes deallocated after the function is finished. So, we don't want to be messing with memory that no longer exists. For instance, the following code example is bad:
+
+\lstset{
+caption=Incorrect Pointer Usage
+}
+\begin{center}
+\lstinputlisting[language=c]{june05/june0503.c}
+\end{center}
+
+
+Even if the program seems to work, the local variable disappears -- the space for it is gone, and we're not supposed to be messing with the memory that it used to be in. 
+
+\begin{remark}
+We can print the memory address of a pointer using \verb|printf| with the format specifier \verb|%p|. 
+\end{remark}
+
+\subsection{Null Pointers}
+The \vocab{null pointer} is a special pointer that points to the address $0$, where nothing is allowed to be accessed. It's analogous to Java's null, except we use \verb!NULL! rather than \verb!null!. 
+
+You can assign null to any kind of pointer variable, and we also need to check if they're null prior to derefering them; using a simple \verb|if (p != null)| conditional works. 
+
+Also, \verb!null!'s numeric value is equal to zero, so a conditional statement with them will not execute.
+
+\subsection{Introduction to Arrays}
+Arrays are a bit different in C when compared to arrays in Java. In C, an \vocab{array} is just a chunk of bytes, one after another. We can declare an array of integers doing something like \verb!int a[3]!, and indexing works the same as Java (starting at zero).  Note that when we make the declaration \verb!int a[3]!, the default elements are \textbf{not} zero (like in Java); instead, they are all garbage values. Also, you can't use a variable to declare the size of an array, but you can use it for indexing. 
+
+
+Note that an array is \textbf{not} an object, meaning that things like \verb!a.length! don't exist. We need to keep track of the length ourselves. This can often be done with \vocab{constants}, which start with the \verb!const! keyword. For now, we assume arrays are not dynamic in terms of their space. 
+
+
+If the array has three elements, then the size of the array is actually $12$ bytes (four bytes per integer). We can use the operator \verb!sizeof!, and something like \verb!sizeof(a)! will return $12$.
+
+
+Some examples of array declarations are as follows: \begin{itemize}
+    \item \verb!int a[3] = {10, 20, 30};! will declare an array \verb!a! of length three, with the three elements listed. 
+    \item \verb!char b[] = {'A', 'B', 'C'}! will declare an array with size $3$ with the provided elements. Note that we don't need to specify the length when we're initializing by list. 
+    \item \verb!float c[4] = {1.5}! will declare an array of size $4$ with first element equal to $1.5$. The other elements will equal $0$. This is really convenient because we can do something like \verb!int a[3] = {0};! to initialize our array of length three to have all zero elements. 
+\end{itemize}
+
+
+\subsection{Arrays as Parameters}
+
+Recall that everything in C is passed by value. 
+

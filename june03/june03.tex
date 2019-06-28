@@ -1,0 +1,93 @@
+\section{Monday, June 3, 2019}
+\subsection{The sizeof Operator}
+
+Before we talk about pointers, first we need to talk about the \verb!sizeof! operator. 
+The \verb!sizeof! is a unitary operator tells us how many bytes are associated with a particular entity. This is an important operator when we're doing dynamic memory allocation. For instance, suppose we don't know how much memory to allocate when we're storing 10 integers. Then, we can do something like $10 \cdot$\verb!sizeof! 
+
+
+It is important to note that the \verb!sizeof! operator does \textbf{not} evaluate the expression; for instance, doing something like \verb!sizeof(x++)! will not increment \verb!x!. It just looks at the type of what's inside. 
+
+
+\subsection{Introduction to Pointers}
+A pointer is declared using the \verb!*! symbol, right before the variable name. Consider the following code example:
+\lstset{
+caption=Pointers Example
+}
+\begin{center}
+\lstinputlisting[language=c]{june03/june0301.c}
+\end{center}
+
+Here, $y$ is a standard integer variable, holding the value $5$. By contrast, $p$ is a pointer variable whose value is garbage. But each of these don't only have a value -- they also have a \vocab{memory address}, which can also be represented by an integer. For example, the memory address of $y$ might be 2000; $p$ doesn't have a memory address yet. A program refers to a block of memory using the address of the first byte in the block.
+
+Now let's say we add another line of code:
+
+
+
+\lstset{
+caption=Pointers Example
+}
+\begin{center}
+\lstinputlisting[language=c]{june03/june0302.c}
+\end{center}
+
+Recall that the \verb!&! symbol is the address-of operator. So at this point, $p$ stores the memory address of $y$, namely, $2000.$ Now, we can do something like \verb!printf("%d", *p)!, like we're used to. Also, whenever we change \verb!*p!, we also change the value of $y$.
+\textbf{In summary, a pointer is a variable that stores a memory address.}
+
+Why do we need the type when we declare a pointer variable? We need to know the number of bytes to grab. Since it's an integer here, we know to grab four bytes. 
+
+
+Now what if we want to read in the pointer using \verb!scanf!? Then we don't need to use the \verb!&! operator on the pointer -- the pointer already refers to a memory address! To make this more clear, consider the following code:
+
+
+\lstset{
+caption=Pointers Example
+}
+\begin{center}
+\lstinputlisting[language=c]{june03/june0303.c}
+\end{center}
+
+When we're taking in \verb!salary!, we need to use the \verb!&! operator since we want to retrieve the address. By contrast, we don't need the \verb!&! operator for \verb!age_ptr! since it already stores a memory address.
+
+
+\subsection{Pointers as Parameters}
+
+Recall that parameters in C are passed \textbf{by value}. To demonstrate this, consider the following code example:
+
+\lstset{
+caption=Variables Passed by Value
+}
+\begin{center}
+\lstinputlisting[language=c]{june03/june0304.c}
+\end{center}
+
+When the code above is executed, the value of $y$ doesn't change -- we're passing a copy of $y$ into the function. That is, the value of $y$ is $7$ even after Line 4 executes. 
+
+
+Now consider the following function \verb!wrong_swap! below:
+
+\lstset{
+caption=Variables Passed by Value
+}
+\begin{center}
+\lstinputlisting[language=c]{june03/june0305.c}
+\end{center}
+
+When the function terminates, the variables $a$ and $b$ are destroyed. The variables $x$ and $y$ \textbf{are not} swapped. The reason why is, again, because parameters are passed by value in C. So how can we swap variables, if we're only returning one value? This can be done with pointers, where the same idea of passing-by-value holds. Here's the correct way to swap --- \newpage
+
+\lstset{
+caption=Variables Passed by Value
+}
+\begin{center}
+\lstinputlisting[language=c]{june03/june0306.c}
+\end{center}
+
+
+This is the same idea, but why does it work? Because we can dereference the pointer. We're note actually changing $x$ and $y$ -- we're changing their memory addresses. So, this works.
+
+
+
+ 
+
+
+
+

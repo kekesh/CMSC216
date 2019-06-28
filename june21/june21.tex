@@ -1,0 +1,25 @@
+\section{Friday, June 21, 2019} 
+Today, we will discuss dynamically allocated memory (i.e. memory that isn't allocated until the program starts running). Why use it? Sometimes, the size of a data structure isn't known until runtime (for example, suppose we want to initialize an array of size $N$, where $N$ is a positive integer provided by the user). Also, Linked Lists will use dynamic memory allocation everytime we make a new node. \\
+
+There are two memory management are library functions that are used to allocate memory dynamically: \texttt{malloc()} and \texttt{calloc()}. \begin{enumerate}
+    \item The \verb!void *malloc(size_t amount);! function allocates \verb!amount! bytes (if available) from the heap and returns a void pointer to the beginning of it. Note that there cannot be any initialization of this space. 
+    \item The \verb!void *calloc(size_t count, size_t obj_size);! function allocates \verb!count! objects of size \verb!obj_size! each (if memory is available), and it returns a void pointer to the beginning of it. By default, all the space is initialized to zero.
+\end{enumerate}
+
+Both \verb!malloc()! and \verb!calloc()! return \verb!NULL! if the allocation fails. 
+
+A third memory management function is \verb!void free(void * ptr)! -- after this function is called, the memory pointed to by \verb!ptr! is now available for reuse by the memory allocator.
+
+
+Good programming practice should exhibit a one-to-one mapping between the number of calls to \verb!malloc()! and \verb!calloc()! and the number of calls to \verb!free()!. This should prefereably occur ni the
+
+
+
+
+
+% \lstset{
+% caption=Command Line Parameters
+% }
+% \begin{center}
+% \lstinputlisting[language=c]{june12/june1201.c}\label{Command Line Parameters}
+% \end{center}

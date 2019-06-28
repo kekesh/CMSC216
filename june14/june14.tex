@@ -1,0 +1,46 @@
+\section{Friday, June 14, 2019}
+
+The \verb!touch! command in Unix is used to make files on the fly. For instance, \texttt{touch bla} would create a $0$-byte file named ``bla.'' \\
+
+The \verb!-F! flag can be used with \verb!ls! in order to appends a forward slash to directory names and appends an asterick to executable files. This can help when identifying different types of files. The \verb!-t! flag can be used with \verb!ls! to list files based on modification time. The \verb!-R! flag can be used to list the contents of every directory recursively. Finally, the \verb!-h! flag displays file sizes in a human-readable format. \\
+
+\subsection{Size of Structures}
+
+We shouldn't be worried about the size of a structure. Within a structure, the fields aren't necessarily laid out continuously. There's usually some deadweight loss in the memory that a structure is using. Hence, in some cases, adding a field might not even change the size of the structure if the space can be capitalized on. In order to minimize memory loss, one should order fields from longest to shortest. Also due to this lack of memory continuity, you should not perform pointer arithmetic to access fields of structures. \\
+
+
+The only thing that we can conclusively say about the size of the structure is that it is \textit{at least} the size of all of its data types combined. Despite these restrictions, we can still have arrays of structures and perform pointer arithmetic within this array.
+
+\subsection{Unions}
+
+A \vocab{union} is like a structure, except the memory is shared. That is, all of the fields share the same memory space (so you can only access one field at any given time). Consequently, the size of a union is \textit{always} the size of its largest field. 
+
+Unions are particularly used when memory is scarce. 
+
+
+\subsection{More on Structures}
+
+For the first midterm, it's important to remember that assigning one structure to another initializes corresponding values to each other. If there's an array within that structure, both structures will subsequently be pointing to the same array (i.e. changes will be reflected in both structures). However, it's still perfectly valid (and saves time) to just make an assignment whenever possible.  
+
+
+Although the assignment operator doesn't work with arrays, the assignment operator would work with two structures which contains an array. \\
+
+
+The tag on a structure is \textbf{optional}. We can declare structures without a tag or a typedef such as in the following example:
+
+\lstset{
+caption=Tagless Structure
+}
+\begin{center}
+\lstinputlisting[language=c]{june14/june1401.c}\label{Tagless Structure}
+\end{center}
+
+The expression in the code above declares \verb!emp1! and \verb!emp2! to be a structure with the fields specified between Lines $2$ and $5$. However, since the structure is tagless, it's impossible to declare another variable of this type --- this means that \verb!emp1! and \verb!emp2! have a unique type. \\
+
+
+When do we want a tagless structure? \begin{itemize}
+    \item If we want a relatively small number of the structures (and the structure becomes useless afterwards)
+    \item We don't want the variables to be passed in as function arguments (there is no type specified, so we can't use them in a function). 
+\end{itemize}
+
+This is sort of like a singleton design pattern in Java, where we can enforce only one (or in this case, two) initialization of a structure. 

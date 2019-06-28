@@ -1,5 +1,5 @@
 \section{Wednesday, May 29, 2019}
-Last time, we analyzed a sample C program. It's important to know that returning $0$ in the \verb!main()! function is independent of the \verb!void! that appears in the main. That is, even if our header is \verb!int main(void)!, \textit{we will still return $0$ at the end of the function}.
+Last time, we analyzed a sample C program. It's important to know that returning $0$ in the \verb!main()! function is independent of the \verb!void! that appears in the main's header. That is, even if our header is \verb!int main(void)! instead of \verb!int main()!, we will still return $0$ at the end of the function. The \verb!void! is just an explicit way of telling our compiler that we shouldn't be passing any parameters in.
 
 \subsection{More Unix Commands}
 Some more Unix: \begin{itemize}
@@ -13,13 +13,17 @@ Some more Unix: \begin{itemize}
         \item The \verb!-cat! command displays the contents of a file.
     \end{itemize}
 \end{itemize}
-In Unix, we can create \vocab{aliases}, which are shortcut commands to use a longer command. Users can use the alias name to run the longer command while typing less. Without any arguments, the \verb!alias! command prints a list of defined aliases. A new alias is defined by assigning a string with the command to a name. We can add an alias by modifying the \verb!.alias! file in the home directory of Grace.
+In Unix, we can create \vocab{aliases}, which are shortcut commands to use a longer command. Users can use the alias name to run the longer command while typing less. Without any arguments, the \verb!alias! command prints a list of defined aliases. A new alias is defined by assigning a string with the command to a name. We can add an alias by modifying the \verb!.aliases! file in the home directory of Grace. 
+
+The general format for defining an alias is \verb!alias [alias name] 'command'!. So adding the line \verb!alias cookies 'ls'! would define the command \verb!cookies! to do the same thing as \verb!ls!
+
 %sprcoredump
 
 \subsection{Compilation Stages of a C Program}
 C programs need to be compiled before they can be executed. What happens when we compile a C program? There are \vocab{three compilation stages}: \begin{enumerate}
-    \item \textbf{Preprocessor Stage:} This stage is used to verify that program parts sees declarations that they need. Also, statements starting with a \verb!#! are processes (for example, 
-    \item \textbf{Translation:} In this stage, 
+    \item \textbf{Preprocessor Stage:} This stage is used to verify that program parts sees declarations that they need. Also, statements starting with a \verb!#! are called \vocab{directives} (for example, 
+    \item \textbf{Translation:} In this stage, an object (\verb!.o!) file is created. In addition, the compiler checks to make sure that individual files are consistent with themselves.
+    \item \textbf{Linkage:} Finally, this stage brings together one or more object files. It makes sure that the caller/calee to functions are consistent. The result is an executable file (by default, it's named \verb!a.out!), 
 \end{enumerate}
 
 
@@ -46,10 +50,14 @@ Consider the following code example:
 caption=Conditional Example
 }
 \begin{center}
-\lstinputlisting[language=c]{may2901.cpp}
+\lstinputlisting[language=c]{may29/may2901.c}
 \end{center}
 
 The print statement in conditional executes successfully for reasons described above.
+
+
+\newpage
+
 
 
 

@@ -1,0 +1,140 @@
+\section{Wednesday, June 12}
+
+The \verb!grep! command in Unix looks for a pattern in a file. The general syntax is \verb!grep [pattern] [file_name]!. So for example, if you wanted to find all instances of "cheese" in "homework.c," you could execute \verb!grep cheese homework.c! to get this result (note how there aren't any quotes). 
+
+\subsection{Command Line Parameters}
+
+So far, our main function's header has always been \texttt{int main(void)}, which indicates that the main method doesn't take in any parameters. However, it is possible to accept command line parameters into the main by instead using the header \texttt{int main(int argc, char **argv)}. This second form allows us to access command line arguments as well as the number of arguments specified (arguments will be separated by spaces). \\
+
+In summary, the two arguments that the \texttt{main} function accepts in this second formulation are \begin{itemize}
+    \item \texttt{int argc}, which represents the number of arguments passed into the program when it's run. This number needs to be at least $1$.
+    \item \texttt{char **argv}, which is a pointer to a character pointer. We can alternatively replace \texttt{char **argv} with \texttt{char *argv[]}, which is an array of character pointers. 
+\end{itemize}
+
+For instance, consider the following program:
+
+
+\lstset{
+caption=Command Line Parameters
+}
+\begin{center}
+\lstinputlisting[language=c]{june12/june1201.c}\label{Command Line Parameters}
+\end{center}
+
+
+We can pass in parameters through command line by typing, for example, 
+\begin{center}
+\texttt{./a.out hello my name is ekesh}. 
+\end{center}
+
+The output is presented below: \\
+
+
+{\noindent \texttt{argv[0]: ./a.out\\
+argv[1]: hello\\
+argv[2]: my\\
+argv[3]: name\\
+argv[4]: is\\
+argv[5]: ekesh \\
+}}
+
+Note how even \texttt{./a.out} counts as one of the strings processed. If we don't want this to happen, we can just treat the $0^{\text{th}}$ index in the array as a sentinel. Also, keep note that \text!argv[i]! is a string. If we want to use a passed in value in, say, a loop, then we need to use the \verb!atoi()! function, which converts a string argument into an integer.
+
+
+\subsection{Two-Dimensional Arrays}
+
+When you're passing in a two-dimensional array into a function, the first array dimension (i.e. the number of rows) does not have to be specified. The second (and any subsequent parameters, if we're working with more than two dimensions) need to be specified.  
+
+
+So, for example, a function with header \texttt{void print(int arr[][n], int m)} would be fine, whereas something like \texttt{void print(int arr[][], int m)} wouldn't work.
+
+Obviously, this would only work if the second dimension is fixed and isn't user-specified; this is a clear drawback. \\
+
+
+
+
+\subsection{Two-Dimensional Character Arrays}
+Consider a two-dimensional array of characters declared as follows: \verb!char friends[100][81]!. \\
+
+Typically, we can view a two-dimensional character array as a one-dimensional array of strings. For example, \verb!char friends[100][81]! would store $100$ strings, each of which have a maximum length of $80$. We can then access the $i^{\text{th}}$ friend stored in the array by standard one-dimensional array indexing, like \verb!friends[0]!. However, it's up to the programmer to verify that the null character is present at the end of each row in the array. \\
+
+Since two-dimensional arrays are stored in row-major order, executing \verb!strcpy(a[0], "12345")! to copy a five-character-long string into an array with column-length less than $5$ will still work; however, the "trailing characters" will go into the next row. There is no compilation error here, though.
+
+
+\subsection{The typedef Keyword}
+
+The $\vocab{typedef}$ keyword is used in C to create an alias for another data type. The general syntax for declaring a typedef is \verb!typedef [data_type] [new_name];! By convention, the \verb!new_name! of a data type usually starts with a capital letter. 
+
+The main reasons why we use typedefs are to improve code readability and maintainability. As per convention, it's good to start \verb!new_name! with a capital letter so that we can distinguish it from other types. 
+
+
+It is important to note that the \verb!typedef! and \verb!#define! preprocessor are not the same: the \verb!#define! preprocessor works by by blindly substituting what we're defining, whereas \verb!typedef! actually defines a new type. 
+In fact, a typedef is not a preprocessor directive; \textbf{typedef is a} \vocab{compiler token}, and the preprocessor doesn't care about it at all. 
+
+\subsubsection{An Exception to Typedef}
+
+An exception to the standard \verb!typedef [data_type] [new_name]! syntax for defining a typedef is when we're dealing with arrays. Pretty much, if we're typedef'ing something to become an array, from what we've learned, we would expect to write something like \verb!typedef int[30] MyArray!. However, \textbf{this is wrong}. The correct way to do this would be to write \verb!typedef int MyArray[30]!; the size of the array comes after the \verb!new_name! identifier. This is an exception, and \verb!MyArray! will now represent an array of $30$ integer elements. 
+
+This exception also applies to multi-dimensional arrays.
+
+\subsection{Structures}
+
+Defined in terms of Java, a structure is a class without methods and without private fields. 
+
+More formally, a \vocab{structure} is a user-defined data type which allows one to group items of possibly differing types into one single type. 
+
+The basic syntax for declaring a structure type is \verb!struct [struct_tag] { [member_list] };! (note how there is a semicolon at the end). Conventionally, structures are typically declared at the top of a program, before the main. Conventionally, structure tags begin with a lowercase letter. \\
+
+Suppose we are writing a program that involves computer graphics. We might want to have a structure to represent a pixel. This structure should abstract the basic details about a pixel, like its $x$ and $y$-coordinates and its color. This can be done with the following code:
+
+\lstset{
+caption=Structure Example
+}
+\begin{center}
+\lstinputlisting[language=c]{june12/june1201.c}\label{Structure Example}
+\end{center}
+
+
+Here, we've declared a structure with the tag ``pixel,'' which contains an integer \verb!x!, an integer \verb!y!, and a character \verb!color!. 
+
+
+Fields in structures cannot be initialized (so, it would be invalid to set \verb!x! and \verb!y! to $0$ by default in the above example). Why can't we initialize fields in structs? Basically, when the structure is declared, there isn't any memory allocated for it (there's no reason to allocate memory yet -- we don't even know if the program will ever use the structure). Memory is allocated only when variables are created, so there isn't any space to actually declare a variable yet. \\
+
+
+Once we've declared the \verb!pixel! struct, we can declare a variable \verb!p1! of its type by typing \verb!struct pixel p1;!. The members of \verb!p1! can be accessed by using the period: \verb!p1.x = 50! would set the $x$ variable associated with \verb!p1! equal to $50$. \\
+
+C also supports using an initialization list to initialize a structure. For example, we could write \verb!p1 = {1, 2, 'r'}! in order to declare \verb!x, y,! and \verb!color! to $1, 2, \text{ and }$ 'r' respectively. The order in which the variables are provided is the same order in which these variables are assigned values. If we don't assign all of the values, their default values will be assigned. \\
+
+There aren't any conversion specifiers that allow us to directly print out all of the variables associated with a structure (side-note: this is called a \vocab{reflection}). If we want to do this, we need a conversion specifier for every variable in the structure.  
+
+
+A couple of other things to remember: \begin{enumerate}
+    \item Structures can be assigned to each other. For instance, $a = b$ will compile, and it will assign all of the field values of $b$ to the corresponding fields in $a$. This performs a shallow copy. 
+    \item Structures cannot be compared. The line $a == b$ will not even compile. Even structures with the same fields in the same order aren't compatible.
+\end{enumerate}
+
+\subsection{Combining Typedefs with Structs}
+
+Following the \verb!typedef [data_type] [new_name]! syntax for declaring a new data type, we can typedef a structure in order to get rid of the \verb!struct! that's usually necessary when declaring a structure. 
+
+For example, consider the pixel example from above. It was necessary to write \verb!struct pixel p1;! to declare a pixel. However, if we modify the code to what follows, we can instead write \verb!Pixel p1;!.  \\
+
+
+\lstset{
+caption=Typedef'ing a Structure
+}
+\begin{center}
+\lstinputlisting[language=c]{june12/june1202.c}\label{Typedef and Structure}
+\end{center}
+
+We usually typedef a structure for brevity and readability.  
+
+
+\subsection{Pointers to Structures}
+Since everything is pass-by-value in C, when we pass in a struct as a parameter to a function, we'll have a copy of the structure with every value equal to the original value's corresponding fields. Like we'd expect, this would mean that changing the structure inside the function doesn't change the original structure outside of the function (i.e. a shallow copy is performed). Like always, if we want to modify the actual structure, we need a pointer to the structure. \\
+
+
+When we're dealing with pointers to structures, there's an \vocab{arrow operator}, which is used to dereference a pointer to a structure. Going back to our pixel example, for instance, if we have the pointer \verb!p1! defined as \verb!Pixel * p1!, we can set the structure's associated value of $x$ equal to $50$ by writing \verb!p1->x = 50!. 
+
+
+Why do we need the arrow operator? There's nothing wrong with writing \texttt{(*p1).x = 50} -- it does the same thing. But, something like \texttt{*p1.x = 50} \textbf{does not work} for precedence reasons. Hence, having the arrow operator improves readability instead of having a lot of parentheses and astericks. 

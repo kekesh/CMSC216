@@ -1,0 +1,117 @@
+\section{Monday, June 10, 2019}
+The \verb!pushd! and \verb!popd! commands in Unix can be used to work with a directory stack. The command \verb!pushd! pushes a directory on top of the directory stack, and the \verb!popd! command returns to the path at the top of the stack. \\
+
+The \verb!history! command prints your most recent commands.
+
+
+\subsection{Pointing to a Local Variable}
+When working with pointers, you shouldn't return the address of a local variable. Consider the following code segment:
+
+\lstset{
+caption=Incorrect Pointer Usage
+}
+\begin{center}
+\lstinputlisting[language=c]{june10/june1001.c}\label{Pointer to a Local Variable}
+\end{center}
+
+The first print statement on Line $15$ will work fine; it'll print out $20$ as we'd want it to. This first part might seem counterintuitive because we usually think that the memory gets ``thrown away'' after the function finishes execution. In reality, this isn't what happens -- the stack pointer just moves down, below the local variable. This tells our computer that the previously occupied area of memory is now available for reuse. In our case, the space occupied by the integer \verb!x! will now be available for reuse. \\
+
+But then, after we call the \verb!add_value! function, the first result will have changed. Since we're declaring another local variable of the same type (integer), the same space that was previously being used will be filled for the second function call. The space that was previously holding the number $20$ will now hold $99$. Once again, after the function finishes execution, the stack pointer moves below the $99$ again (but it does not disappear!). 
+
+
+And so, the print statement on Line $18$ prints $106$, and the print statement on Line $20$ will print out $99$. 
+
+
+\subsection{String Comparison}
+To compare strings, we use the \verb!strcmp! function, which is built in \texttt{string.h} library. The function header is as follows:
+\begin{center}
+    \texttt{int strcmp(const char *s1, const char *s2);}
+\end{center}
+
+Pretty much, it takes in two strings \texttt{s1} and \texttt{s2}, and it returns a negative number if \texttt{s1} is (lexicographically) less than \texttt{s2}, the integer $0$ if they're (lexicographically) equal, and a positive number otherwise. Note that the \texttt{const} in the parameter list of \texttt{strcmp} indicates that the data of \texttt{s1} and \texttt{s2} can't be changed (this makes sense because changing the strings isn't necessary for comparison). 
+
+
+\begin{remark}
+This functionality is pretty much the same as  \texttt{compareTo} in Java 
+\end{remark}
+
+
+Here's one way to implement the \texttt{strcmp} function. Nelson says we should know this implementation for the exam. 
+
+
+\lstset{
+caption=String Comparison Implementation
+}
+\begin{center}
+\lstinputlisting[language=c]{june10/june1002.c}\label{Pointer to a Local Variable}
+\end{center}
+
+\begin{itemize}
+    \item The for loop iterates until we reach the end of either string (the Boolean expression \verb!s1[i] && s2[i]! is false only if we hit a null character in either string) or if we hit two characters that are different (this is what the conditional inside the loop does).
+    \item Once we're at the differing character, we can just return their difference. 
+\end{itemize}
+
+Note that the above implementation uses the fact that the null character has numeric value $0$. This allows the code above to take care of the cases in which one string is shorter than the other.  
+
+\subsection{Copying Strings}
+To copy a string, we use the \verb!strcpy()! funcion, which is built into the \verb!string.h! library. The header is as follows: \begin{center}
+\verb!char* strcpy(char *dest, const char *src)!.
+\end{center}
+
+The function copies the string in \verb!src! to the string in \verb!dest!. After successful completion, the function returns a pointer to the destination string. 
+
+The danger with \verb!strcpy()! is that it doesn't specify the size of the destination array, which can lead to a \vocab{buffer overflow error}. This type of error occurs when you put more data into a fixed-length buffer. The extra information has to go somewhere, and it can overflow into adjacent memory space, which corrupts other data. \\
+
+
+Here's an implementation of the function \verb!strcpy()! function: 
+
+\lstset{
+caption=String Copy Implementation
+}
+\begin{center}
+\lstinputlisting[language=c]{june10/june1003.c}\label{Pointer to a Local Variable}
+\end{center}
+
+\begin{itemize}
+    \item We are copying the source into the destination.
+    \item The while loop executes until we hit the null character in the source.
+    \item We copy the first, second, third.... character into the destination. 
+    \item When the while loop executes, $i$ is equal to the position where source has a null character, so we need to add that into the destination string.
+\end{itemize}
+
+Again, take note of the parameters. The string \verb!dest! isn't constant because we're modifying it. 
+
+\subsection{String Literals}
+
+The declarations \verb!char name[] = "Mary"! and \verb!char *name = "Mary"! are not the same. The first declaration is an array, which is what one should use if they're planning to change the value of the name from Mary to something else. On the other hand, the second declaration declares name as a pointer to a string literal. This should instead be declared as \verb!const char* name = "Mary"!. \\
+
+
+
+\subsection{Void Pointers}
+A \vocab{void pointer} or \vocab{generic pointer} (they are the same) is a special pointer that's used to hold memory addresses of data when you don't know its type. They are used by functions (like C's built-in quicksort function) when you don't know the type of data you're dealing with. Void points are declared by simply replacing the type of a normal pointer with the void keyword. So, \verb!void *ptr! would declare \verb!ptr! to be a void pointer. \\
+
+A void pointer can point to any type. So, you would be able to do \verb!ptr = &someInt! or \verb!ptr = &someChar!, etc. But integers, floats, and characters occupy different amount of space. So how does this work? The key is to note that pointer variables store the address of the first byte. \\
+
+
+Note that \textbf{a void pointer cannot be dereference directly}. Dereferencing requires casting because the pointer needs to know how many bytes to grab. It's up to the user to make sure that the void pointer is casted right. So if you read in a float value into \verb!ptr!, the statement \verb!printf("V1: %f\n", * (float *) v_ptr)! would print the entity at the address stored in \verb!v_ptr!. Note how this print statement has two asterick symbols: one is used in the cast, whereas the other is used for dereferencing. 
+
+
+It's also a good idea to use type casting when you're doing pointer arithmetic with void pointers. For example, consider the following code segment:
+
+\lstset{
+caption=Bad Void Pointer Arithmetic
+}
+\begin{center}
+\lstinputlisting[language=c]{june10/june1004.c}\label{Bad Pointer Arithmetic}
+\end{center}
+
+You might want to print the second element of the array with the above code. But this won't work. Adding a number to a memory address works by shifting logical units. However, these logical units are dependent on the type being worked with. Changing the fourth line to \verb!printf("%d", (int *) one_d + 1)! would fix this. \\
+
+
+The value of a void pointer can be assigned to integer/float/other pointer variables \textbf{without a cast}. For example, if we have a float pointer \verb!f_ptr! and a void pointer \verb!v_ptr!, the statement \verb!f_ptr = v_ptr! works perfectly fine because it's just specifying how many bytes to grab. 
+
+
+\subsection{Pointers to Pointers}
+You can have pointers to pointers (and even pointers to those pointers). The number of astericks indicates the degree-of-separation from the original variable. For instance, \texttt{int **p2} is a pointer to a pointer. Once \verb!p2! has properly been initialized, we can do double dereferencing by typing \verb!** p_{2}! to get the value of the original variable. 
+
+When do we use pointers to pointers? Consider a function we're writing that needs to modify a pointer. This would need to be implemented by taking in a pointer to a pointer;  

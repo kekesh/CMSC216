@@ -1,0 +1,36 @@
+\section{Monday, June 24, 2019}
+
+\subsection{Linked Lists}
+Like inner classes in Java, C structures can have pointers to structures of the same type. This allows us to define a Linked List's node as follows:
+
+
+\lstset{
+caption=Linked List Node}
+\begin{center}
+\lstinputlisting[language=c]{june24/june2401.c}\label{Command Line Parameters}
+\end{center}
+
+
+Note that the structure tag here is necessary here since we have a self-reference inside our definition of a node.
+
+In order to represent a Linked List, we declare a pointer to the head by typing something like \verb!Node *head!. The pointer allows us to modify the Linked List inside of various functions.
+
+There are two noteworthy types of Linked Lists traversal: \begin{itemize}
+    \item The ``print traversal,'' which works by moving a current pointer forward after some processing 
+    
+    \lstset{
+    caption=Print Traversal}
+    \begin{center}
+    \lstinputlisting[language=c]{june24/june2402.c}\label{Print Traversal}
+    \end{center}
+    
+    \item The ``Tom and Jerry'' traversal, which works with two adjacent pointers. The left-most pointer allows us to look back and access previous elements 
+    
+    \lstset{
+    caption=Tom and Jerry Traversal}
+    \begin{center}
+    \lstinputlisting[language=c]{june24/june2403.c}\label{Tom and Jerry}
+    \end{center}
+
+\end{itemize}
+
