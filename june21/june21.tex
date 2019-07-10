@@ -1,17 +1,69 @@
 \section{Friday, June 21, 2019} 
-Today, we will discuss dynamically allocated memory (i.e. memory that isn't allocated until the program starts running). Why use it? Sometimes, the size of a data structure isn't known until runtime (for example, suppose we want to initialize an array of size $N$, where $N$ is a positive integer provided by the user). Also, Linked Lists will use dynamic memory allocation everytime we make a new node. \\
+\subsection{Recap of Dynamic Memory Allocation}
+Today, we will continue discussing dynamically allocated memory (i.e. memory that isn't allocated until the program starts running). What's another reason we use it? Sometimes, the size of a data structure isn't known until runtime (for example, suppose we want to initialize an array of size $N$, where $N$ is a positive integer provided by the user). Also, Linked Lists will use dynamic memory allocation everytime we make a new node. \\
 
-There are two memory management are library functions that are used to allocate memory dynamically: \texttt{malloc()} and \texttt{calloc()}. \begin{enumerate}
+To recap, there are two memory management are library functions that are used to allocate memory dynamically: \texttt{malloc()} and \texttt{calloc()}. \begin{enumerate}
     \item The \verb!void *malloc(size_t amount);! function allocates \verb!amount! bytes (if available) from the heap and returns a void pointer to the beginning of it. Note that there cannot be any initialization of this space. 
     \item The \verb!void *calloc(size_t count, size_t obj_size);! function allocates \verb!count! objects of size \verb!obj_size! each (if memory is available), and it returns a void pointer to the beginning of it. By default, all the space is initialized to zero.
 \end{enumerate}
 
 Both \verb!malloc()! and \verb!calloc()! return \verb!NULL! if the allocation fails. 
 
-A third memory management function is \verb!void free(void * ptr)! -- after this function is called, the memory pointed to by \verb!ptr! is now available for reuse by the memory allocator.
+A third memory management function is \verb!void free(void * ptr)! -- after this function is called, the memory pointed to by \verb!ptr! is now available for reuse by the memory allocator. Something to take note of is that \verb!free()! has to be the same pointer that was returned from \verb!malloc()! or \verb!calloc()! -- we can't call \verb!free()! in the middle of the area that we allocated. Also, after the pointer is freed, the pointer becomes a dangling pointer, so we shouldn't dereference it. 
+
+Good programming practice should exhibit a one-to-one mapping between the number of calls to \verb!malloc()! and \verb!calloc()! and the number of calls to \verb!free()!. It's also good to know that calling \verb!free()! on null is harmless -- you don't need any null checks for calling \verb!free()!. Doing \verb!free(NULL)! is completely harmless. Also, as one would expect, we can't free pointers whose data is constant (i.e. we can't free a pointer declared as \verb!const char *p!). 
 
 
-Good programming practice should exhibit a one-to-one mapping between the number of calls to \verb!malloc()! and \verb!calloc()! and the number of calls to \verb!free()!. This should prefereably occur ni the
+We should only call \verb!free()! on a pointer once. Why? When we call malloc or calloc, we're telling our computer that we want to reserve some memory just for that pointer. When we subsequently call free, we're telling the computer that we don't need that space anymore; however, the pointer still points to that memory address. If we invoke \verb!free()! a second time, we're not freeing the previous data, but possibly some new data that resides at that memory address.
+
+\subsection{Dynamically Allocated Structures}
+Consider the following lecture example:
+
+\lstset{
+caption=Dynamically Allocated Structure
+\label{Dynamically Allocated Structure}
+}
+\begin{center}
+\lstinputlisting[language=c]{june21/june2101.c}
+\end{center}
+
+
+On Line $16$, we dynamically allocate space for \verb!student! to become a \verb!Student! type. Immediately after, we check if this allocation was successful (i.e. check if \verb!student == NULL! holds), and we continue if it was. Next, we allocate space for \verb!name!, depending on how many characters the user requires (which is provided through stdin). Finally, we store the student's age (also from stdin), we print the student's information, and we free the space we allocated. \\
+
+Some key things to note: \begin{itemize}
+    \item Why did we allocate space for \verb!student! and \verb!name! but not for \verb!age!? Because \verb!age! isn't a pointer, so we already get space for \verb!age! after we dynamically allocate space for \verb!student!. 
+    \item Why do we free \verb!name! before \verb!student!? If we freed \verb!student! first, then \verb!student! becomes a dangling pointer. So, we shouldn't be accessing \verb!student->name! afterwards (accessing the name depends on the existence of a student, but the student's existence doesn't depend on its name).  
+\end{itemize}
+
+
+\subsection{Pointer Aliases}
+We can have two pointers point to the same dynamically allocated memory area. For instance, consider the following code segment:
+
+\lstset{
+caption=Pointer Aliases and Dynamic Memory Allocation
+\label{Pointer Aliases and Dynamic Memory Allocation}
+}
+\begin{center}
+\lstinputlisting[language=c]{june21/june2102.c}
+\end{center}
+
+In summary, if we free one pointer pointing to a memory address, \textit{every} pointer pointing to that same memory address becomes a dangling pointer.  \\
+
+\subsection{Common Errors}
+The common errors of dynamically allocating memory comes are summarized below: \begin{enumerate}
+    \item Dereferencing pointers to freed space. We've already discussed this.
+    \item Forgetting to check if malloc or calloc returned null (i.e. the dynamic memory allocation was unsuccessful).
+    \item Forgetting to initialize the memory \verb!malloc()! returns (\verb!calloc()! automatically does this for us).
+    \item Attempting to free non-heap memory (i.e. we should \textit{only} be calling \verb!free()! on dynamically allocated memory). 
+    \item Memory leaks: forgetting to call \verb!free()! on dynamically allocated memory. 
+    \item Calling \verb!free()! twice on a pointer. 
+\end{enumerate}
+
+
+Using valgrind can help identify these errors.
+
+
+% basics.c help s with Exercise 3.
 
 
 

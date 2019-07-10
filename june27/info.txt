@@ -1,0 +1,4 @@
+This project is about hashing,
+files, structures,
+pointers
+and dynamic memory allocation (and more pointers).

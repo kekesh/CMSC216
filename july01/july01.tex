@@ -1,0 +1,91 @@
+\section{Monday, July 1, 2019}
+A \vocab{nibble} is a term used to describe four bits. A very important thing to remember from last lecture is that each hexadecimal digit is represented by a nibble.
+
+\subsection{Unix File Permissions}
+% This will be on the exam.
+Unix file permissions are based on the octal system. Every file is associated with three entities: the user entity, the group entity, and the ``other'' entity. The user entity describes the file permission of yourself. The group entity describes a set of users on the same system. The ``other'' section describes everyone else. 
+
+
+The \verb!chmod! command can be used in Unix to change permissions of a file. The general format of the command is \verb!chmod [settings] [file_name]!. What we enter for the \verb![settings]! portion of the command is a three-digit octal number, specifying the permissions for each entity. The first digit corresponds to the specifications for the user, the second digit corresponds to the settings of the group, and the last digit is for the ``other'' entity. 
+
+
+So, how does it work? We convert each octal digit in \verb![settings]! to a three-digit binary number, which specifies whether the entity has read, write, and/or executing permissions, in that order.
+
+
+As an example, suppose we execute \verb!chmod 400 a.out!. The corresponding binary representation of \verb!4! is \verb!100!, meaning that the user (the person executing the command) will be able to read the file, but they will not be able to write to the file or execute it. Since the other two octal digits are \verb!0!, the permissions of the group and ``other'' categories aren't modified.
+
+
+
+How do we determine what the \verb![settings]! number should be? This is easy - just work backwards. Suppose we want the user and the group to be able to read and execute the file but not write to it. This corresponds to the three-digit binary number \verb!101!, which has octal representation \verb!5!. So, \verb!chmod 550 a.out! does exactly what we want.
+
+
+
+We can call \verb!chmod! recursively on a directory using the \verb!-r! flag. 
+
+
+\subsection{Introduction to Assembly Language}
+
+\subsubsection{Terminology}
+
+\vocab{Assembly} is a low-level, readable translation of machine language. It is a programming language that we work with when we want to see what the computer is doing. There are many assembly languages out there - in this class, we will use AVR Assembly. We can generate the set of assembly instructions from a C program by compiling with the \verb!-S! flag when using \verb!avr-gcc!. This is not allowed in this class. 
+
+
+
+
+A computer consists of some memory (RAM), and a CPU. Inside of the CPU, there is an \vocab{arithmetic logic unit}, which is responsible for performing computations. Additionally, inside of the CPU, there are \vocab{registers}, which are fast-access locations that instructions use instead of storing all values in memory. Registers are all one byte. In AVR, there are $32$ registers, labeled r0, r1, $\ldots$, r31. A computer also has a \vocab{program counter}, which is a register that specifies the next instruction to be executed. Finally, the computer has an \vocab{immediate}, which consists of constants that are in the instruction itself. 
+
+
+
+A program written in AVR assembly has four components to it. Firstly, there are \vocab{instructions}, which specify what the processor will execute. These instructions typically consist of a name, a list of registers, and sometimes a constant value. In addition, there are \vocab{labels}, which represent an address. Labels are typically denoted by some text, followed by a colon. They are also used to define functions. Finally, there are \vocab{assembler directives}, which controls where code and data are placed, as well as \vocab{comments}. \\
+
+How does our assembly code become machine language? We use an \vocab{assembler} (which is analogous to a compiler), which produces the zeroes and ones associated with our instructions. 
+
+\subsubsection{Basic Examples}
+
+To illustrate how a basic assembly program works, we'll first consider some logically equivalent code written in C:
+
+\lstset{
+caption=C Program for Assembly Example
+}
+\begin{center}
+\lstinputlisting[language=c]{july01/july0101.c}
+\end{center}
+
+Note that we don't actually use the variable \verb!x! - it's just there so that we can see how to create global variables in assembly. What does this code segment do? It prints the letter \verb!A! (which has ASCII value $65$), and it subsequently prints a newline character (which has ASCII value $10$). \\
+
+The corresponding assembly program is presented below:
+
+
+%\avrasm{july01/july01}{Hi}
+
+\lstset{
+caption=Assembly Example
+}
+\begin{center}
+\lstinputlisting[language={[x86masm]Assembler}]{july01/july0101.asm}
+\end{center}
+
+What observations can we make? 
+\begin{itemize}
+    \item Comments begin with a single semicolon, but we sometimes prefer to use more for style.
+    \item Symbolic constants are defined with \verb!.set! followed by a target text, a comma, and a replacement text. The target text never actually makes it to the machine code; it is processed by the assembler.
+    \item By writing the \verb!.data! directive, we indicate that what follows is a data section. We create labels by having some text, followed by a colon. Here, our label is \verb!x!, which stores the memory address of the value $6$. What follows \verb!.byte! indicates the entity being stored at the memory address. This can be written in decimal (as it is), hexadecimal, or even binary. 
+    \item The \verb!.text! directive indicates that we're done with our initial setup, and everything that follows is actual code. This is, obviously, a vital directive to have.
+    \item A function, like main, also begins with a label. Moreover, functions end with \verb!ret!. 
+    \item To call a function, we use the call instruction \verb!call init_serial_stdio!. We will always call this function to permit us to use input and output.
+    \item To print the ASCII value of `A,' we need to first load a value into a register using \verb!ldi!. In our program, we move $65$ to register $24$. 
+    \item After we load into register $24$, we clear register $25$ with \verb!clr!. Why do we clear register $25$? Because \verb!putchar()! assumes that the value it will display can be found in registers $24$ and $25$. This is a rule defined by gcc. So after executing this, register $25$ contains zero (i.e. no data).  
+    \item To flush the buffer, we load in the new line character to register $24$, and we re-clear register $25$ (in case \verb!putchar! messed it up). Finally, we call \verb!putchar! again, and we get our desired output.
+    \item The \verb!cli! and \verb!sleep! functions are necessary to stop the program. 
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+Side-note: we can't have floating-point types in AVR Assembly, but we can have integers, characters, and strings. 
