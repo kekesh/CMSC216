@@ -83,7 +83,7 @@ Like standard input, standard error is also printed to the screen. It is denoted
 So, standard input and standard error are different files; however, they both map to the screen. To direct standard error, we can use \verb!> &! in Unix. 
 
 
-The end of a file is denoted by an invisible \vocab{end of file} (EOF) character. There's a function with the header \verb!int feof(FILE *fstream)! that checks whether the EOF file has been reached, after the file has been attempted to been open. We can manually enter the end-of-file character with our keyboard by entering \texttt{CTRL + D}. 
+The end of a file is denoted by an invisible \vocab{end of file} (EOF) character. There's a function with the header \verb!int feof(FILE *fstream)! that checks whether the EOF file has been reached, after the file has been attempted to been open. We can manually enter the end-of-file character with our keyboard by entering \texttt{CTRL + D}. Also, \verb!EOF! is a preprocessor directive, so we can use that in our conditionals.
 
 
 It is important to note that we need to first attempt to read the file before using \verb!feof()!. 

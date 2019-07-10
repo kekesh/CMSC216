@@ -1,0 +1,48 @@
+\section{Wednesday, June 26, 2019}
+
+Midterm $1$ will be graded by sometime next week. 
+
+\subsection{Operating on Memory Blocks}
+Like \verb!strcpy()! operates on strings, there is an analogous function that operates on entire blocks of memory. Namely, this function is memcpy, which has the following declaration: \verb!void *memcpy(void *dst, void *src, size_t n)!. It works pretty much the same with \verb!strncpy()! works: it takes a destination, source, and the number of bytes to copy. A prerequisite to using \verb!memcpy()! is that \verb!dst! and \verb!src! cannot be overlapping pieces of memory (for instance, they shouldn't be pointing to different portions of the same array).  \\
+
+So, what do we do if we need to quickly copy overlapping memory areas? We can use the \verb!memmove()! function, which has the declaration \verb!void *memmove(void *dst, void *src, size_t n)!, but it's not as efficient. 
+
+
+A possible implementation of \verb!memcpy()! is presented below:
+
+ \lstset{
+    caption=Memset and Memcpy}
+    \begin{center}
+    \lstinputlisting[language=c]{june26/june2601.c}\label{Memset and Memcpy}
+    \end{center}
+    
+Note how the function utilizes void pointers, which means that we can pass any type of pointer into the function. We cast to \verb!char *! so that we can iterate byte-by-byte.
+
+
+The function \verb!memcpy()! is really helpful. So far, to make copies of arrays of structures, we've been iterating through every index with a for loop. But now, we can do all of this with a single statement. Nelson says that this is important to know for exams. \\
+
+
+
+\subsection{Function Pointers}
+In the same way that we can have pointers to variables, we can also have pointers to functions. \vocab{Function pointers} store the memory address of a function, which is possible as each function is located somewhere in memory. Similar to an array, the name of a function can be seen as a variable that stores the function's address. \\
+
+We can use function pointers in pretty much the same way that we use normal pointers. 
+
+A procedure to write the declaration of a function pointer is to first just write the function prototype, add parentheses around the function name (``hug the function"), and add an asterisk  to the start of the newly added parentheses (``kiss the function"). The following lecture example illustrates the basics:
+
+
+\lstset{
+caption=Introduction to Function Pointers}
+\begin{center}
+\lstinputlisting[language=c]{june26/june2601.c}\label{Introduction to Function Pointers}
+\end{center}
+
+
+On Line $16$, we declare a function pointer \verb!fp! using the exact procedure previously described. The key thing to note there is that the parentheses around \verb!*fp! indicates that \verb!fp! is a pointer to a function, not a function that returns a pointer. \\
+
+Once we've got a function pointer, we can assign it to the name of a function (just as we could do with arrays), and everything works fine. In fact, the C compiler even allows us to assign a function pointer to the \textit{address} of a function (like on Line $24$), or even dereference while calling the function (like Line $27$), and everything will still work fine. However, the statements on Line $22$ and $23$ illustrate standard way to do this. \\
+
+
+
+
+

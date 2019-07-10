@@ -1,25 +1,80 @@
 \section{Thursday, June 27, 2019}
 \subsection{Memcpy and Memset}
-The \verb!void *memcpy(void * destination, const void * source, size_t num)! function is really similar to the \verb!strcpy()! function. The function \verb!memcpy()!| is used to copy a specified number of bytes from one memory to another, whereas \verb!strcpy()! copies the contents of one string into another. Also, \verb!strcpy()! works exclusively with strings, but \verb!memcpy()! works with any type of data.
+The \verb!void *memcpy(void * destination, const void * source, size_t num)! function is really similar to the \verb!strcpy()! function. The function \verb!memcpy()! is used to copy a specified number of bytes from one memory to another, whereas \verb!strcpy()! copies the contents of one string into another. Also, \verb!strcpy()! works exclusively with strings, whereas \verb!memcpy()! works with any type of data.
 
 
-Another function is \verb!void * memset (void * ptr, int value, size_t num)!, which sets the first \textit{num} bytes to the block of memory pointed to by \textit{ptr}.
+Another function is \verb!void * memset (void * ptr, int value, size_t num)!, which sets the first \verb!num! bytes in the block of memory pointed to by \verb!ptr!, and sets them all to \verb!value!. For instance, if you have a character array \verb!arr!, the statement \verb!memset(arr, 'a', 8)! would set \verb!arr! to have eight characters, each of which are \verb!a!.
 
-For example, consider the following code:
+A more comprehensive example is provided below:
     
     \lstset{
     caption=Memset and Memcpy}
     \begin{center}
     \lstinputlisting[language=c]{june27/june2701.c}\label{Memset and Memcpy}
     \end{center}
+    
+    
+    
 
-Upon running the code, Line $27$ copies the contents of \verb!roster! to the destination \verb!copy!. Hence, the print statements on Lines $26$ and $28$ print out the exact same thing. Also, the \verb!memset! cal on Line $31$ sets the first half of the elements of \verb!name! equal to \verb!'a'!. Consequently, the print statement on Line $33$ prints fourty \verb!a!'s.
+Upon running the code, Line $27$ copies the contents of \verb!roster! to the destination \verb!copy!. It's important to note that this isn't the same as making the two array pointers point to the same block of memory. Using \verb!memcpy()!, we've created two distinct blocks of memory with the same contents. Hence, the print statements on Lines $26$ and $28$ print out the exact same thing. Subsequently, the \verb!memset! call on Line $31$ sets the first half of the elements of \verb!name! equal to \verb!'a'!. Consequently, the print statement on Line $33$ prints fourty \verb!a!'s.
 
 
-\subsection{Representing Characters}
-The most common formats of representing characters are listed below: \begin{enumerate}
-    \item \vocab{ASCII} is the most commonly used format; the capital letters are assigned numbers from $65-90$, and the lowercase letters are assigned letters from $97-122$. 
-    \item \vocab{Unicode} is another common format. It stands for Unicode Transformation Format, and there are a few different versions. UTF-32 allows us to represent any character in any language (used by the Government), UTF-16 is the more popular, and UTF-8 provides backwards compatibility with ASCII (popular on the web).
+We cannot copy overlapping memory areas when using \verb!memcpy()! or \verb!memset()!.  
+
+
+\subsection{Searching Files with Grep}
+
+\verb!grep! is a command-line utility that can be used in Unix to search for patterns of characters in a file. The general format for \verb!grep! is \verb!grep [target_string] [file_name]! Consider the following text file, called \verb!information.txt!:
+
+\lstset{
+caption=Text Sample}
+\begin{center}
+\lstinputlisting[language=c]{june27/info.txt}\label{Text Sample}
+\end{center}
+
+If we were to type \verb!grep point information.txt!, the shell would return the lines in which the string \verb!point! is found (namely, the third and fourth lines). A useful flag that we can add is the \verb!-n! flag, which returns the line numbers alongside the lines that are found. \\
+
+Now, what if we want to search multiple files? Like other Unix commands, we can use the \verb!*! wildcard. For instance, \verb!grep -n point *! would print the lines and line numbers of every file in the current directory that contains the string \verb!point!. To search recursively (in subdirectories), we need the \verb!-r! flag. 
+
+
+
+
+\subsection{Data Representation}
+\subsubsection{Character Representation}
+The two most common formats of representing characters are listed below: \begin{enumerate}
+    \item \vocab{ASCII} is the most commonly used format; the capital letters are assigned numbers from $65$-$90$, and the lowercase letters are assigned letters from $97$-$122$. 
+    \item \vocab{Unicode} is another common format. It stands for Unicode Transformation Format, and there are a few different versions. UTF-32 allows us to represent any character in any language (used by the Government), UTF-16 is the most popular, and UTF-8 provides backwards compatibility with ASCII.
 \end{enumerate}
+\subsubsection{Integers}
+When we're representing unsigned integers, the representation is more straightforward - all of the numbers are stored using binary. Now, this works pretty easily for positive integers, but what if we want to represent a negative number? It turns out that the solution comes using a convention called \vocab{two's complement}. 
 
 
+Under two's complement, the positive value of a number is just its binary representation with its leftmost bit equal to $0$. To obtain a negative value, we invert all of the bits of the corresponding positive value, and we add $1$. The eight bits \verb!00000101! typically correspond to the decimal number $+5$. Under the two's complement convention, the number $-5$ can be represented by \verb!11111011!.
+
+Why do we use two's complement instead of, say, just adding an extra bit at the start or end to indicate the sign? The reason why we use two's complement over just having an additional sign-indicating bit is mostly for math-simplifying reasons\footnote{\url{https://stackoverflow.com/questions/1125304/why-prefer-twos-complement-over-sign-and-magnitude-for-signed-numbers}}. 
+
+
+With two's complement, The range of values that we can store with $n$ bits ranges from $-2^{n - 1}$ to $2^{n - 1} - 1$, inclusive.
+
+\subsubsection{Floats and Doubles}
+We can store floats and doubles by writing it in the form \begin{equation}
+\label{fp:rep}
+(-1)^{s} \cdot m \cdot r^{e},
+\end{equation}
+where $s$ is a bit (either $0$ if we're representing a positive number or $1$ if we're representing a negative number) representing the sign of the number, $m$ is a \vocab{mantissa}, $r$ is the \vocab{radix} (base) we're working in, and $e$ is an exponent to be determined.   
+
+
+This might seem confusing at first, but we can break this process down into one simple step: writing the number in scientific notation.
+
+
+All of the variables in \Cref{fp:rep} comes from writing our number in scientific notation. For example, if we want to store the decimal number $51.432$, we can write it as $5.1432 \cdot 10^{1}$, and we can examine this expression to see that $m = 5.1432$, $r = 10$, $e = 1$, and $s = 0$.  
+
+Similarly, if we're storing the binary number $1001.1101$, we would be able to write this as $1.0011101 \cdot 2^{3}$ and find $m = 1001.1101$, $r = 2$, $e = 3$, and $s = 0$. 
+
+
+The number of bits allocated for the radix, exponent, and mantissa are specified by the IEEE 754 floating point standard. To store a negative exponent, we add an \vocab{exponent bias} to the exponent $e$, which normalizes the number zero to all zeroes. 
+
+
+\subsection{Imprecision with Real Numbers}
+
+Some real numbers, like $1/3 \approx 0.33333$, have infinitely long decimal representations. This can create complications when we're storing these numbers because we only have finite space. In summary, some of these bits get cutoff, which can cause some small imprecisions when dealing with real numbers. 

@@ -1,1 +1,85 @@
-\section{June 19, 2019}
+\section{Wednesday, June 19, 2019}
+
+% For Project $3$, it's important to remember that we can declare a file pointer to be standard input by using the \verb!stdin! keyword. 
+
+In addition, it's important to remember that \verb!fgets()! returns \verb!NULL! after we've reached the end of file (i.e. we shouldn't be using \verb!EOF! with it. On the other hand, it's fine to use \verb!EOF! with \verb!scanf! statements. 
+
+
+\subsection{The scanf() Family}
+
+There are three functions in the \verb!scanf()! family: \verb!scanf()!, \verb!fscanf()!, and \verb!sscanf()!. \\
+
+First, \verb!fscanf()! has the header \verb!int fscanf (FILE * stream, const char * format, [address of variables] )!. Pretty much, we take in a file pointer along with some format, and we read it into some variables. When processing files, we want to keep reading until we hit \verb!EOF!. 
+
+The loop conditional \verb|while(fscanf(input_stream, "%s%d", students_name, &id) != EOF)| allows us to process the lines in a file one-by-one until we hit the end of the file. Note, however, that there's an assumption that the lines of the file are formatted in the same way. It's a good idea to use \verb!fscanf()! when the lines are inputted in a uniform manner. \\
+
+The \verb!sscanf()! function has the header \texttt{int sscanf (const char * s, const char * format, ...)}, which returns the number of variables successfully read from the input string \verb!s!. This can be helpful when we've already stored the string (e.g. a line) to be processed. \\
+
+
+
+Sometimes, it's really helpful to combine the use of \verb!fgets()! and \verb!sscanf()!. The former allows us to store the entire line, and the latter allows us to make sure that everything is formatted properly (by using its return value). 
+
+
+\subsection{The printf() Family}
+
+\begin{itemize}
+    \item \verb!printf()!, we've already seen.
+    \item \verb!fprintf()! has the header \verb!int fprintf ( FILE * stream, const char * format, ... );!. It takes a stream, and it's analogous to \verb!fscanf()!. 
+    \item \verb!int sprintf(char *str, const char *format, ...)! prints into the string variable \verb!str!; it's the analogue of \verb!sscanf()!. 
+\end{itemize}
+
+
+\subsection{Dynamic Memory Allocation}
+
+Dynamic memory allocation allows us to allocate storage space while the program is running. Once we're done using this allocated memory, it's important to call the \verb!free()! function to make that space available again. There are a few other important functions that help us with dynamic memory allocation, the first of which is \verb!malloc()! (which is short for memory allocation). 
+
+
+The malloc function has the header \verb!void* malloc(size_t size)!. The function takes in a size parameter, specifying how much space to allocate. It returns a void pointer pointing to where that space begins. The function returns \verb!NULL! if the memory allocation fails. \\
+
+
+As an example, consider the following code segment:
+
+
+\lstset{
+caption=Malloc Example 1
+\label{Malloc Example}
+}
+\begin{center}
+\lstinputlisting[language=c]{june19/june1901.c}
+\end{center}
+
+
+We start with an integer pointer \verb!ip!, and we make it point to some space of memory using \verb!malloc!. Note how we've specified that this memory has enough space to store one integer. Thus, we can dereference the pointer and assign it to an integer, and everything works fine. Further, observe that there is no need to cast the void pointer to an integer pointer. \\
+
+Once we've called \verb!free()! on a dynamically allocated memory address, it's important that we don't access that memory location again. When a memory location has been freed, any pointers that used to point to it become \vocab{dangling pointers}, which shouldn't be used. Doing so could lead to a segmentation fault, so it can be helpful to set the previously used pointer equal to null.
+
+
+So, what happens internally when we call \verb!free()!? Essentially, the heap manager marks the bytes in the memory specified as available for use. We don't actually care about what the \verb!free()! returns -- to us, it just means that the memory is free again. When we don't free the memory we've used, it's called a \vocab{memory leak}, which is bad. \\
+
+
+We can also allocate memory for an entire array using the following code segment:
+
+
+
+\lstset{
+caption=Malloc Example 2
+\label{Malloc Example 2}
+}
+\begin{center}
+\lstinputlisting[language=c]{june19/june1902.c}
+\end{center}
+
+There aren't really any new concepts in this code segment. It should be carefully noted, however, that we check if the pointer returned from malloc and calloc is null after each call. It is important to do this for secret tests and release tests. The output of the program is \texttt{0 3 6}, and the memory allocated for the array is freed after this is printed. It's important to call \verb!free()! on a pointer that points to the \textit{start} of the array that we've allocated, otherwise freeing won't work.
+
+
+
+When we assign \verb!malloc()! to a pointer, the value at the assigned memory location is garbage. 
+
+
+
+
+There's an alternative way to allocate memory: with the \verb!calloc()! function. Unlike the \verb!malloc()! function, \verb!calloc()! takes in two parameters: its header is \verb!void *calloc(size_t count, size_t obj_size)!, and it allocates \verb!count! objects of size \verb!obj_size! each. The function returns a pointer to the beginning of the memory address created. Also unlike malloc, the calloc function initializes all spaces to zero, which can save time depending on what we're doing. \\
+
+
+
+Having introduced calloc, there are a lot of shortcuts we can take. For example, consider the statement \verb!int **q = calloc(4, sizeof(int *))!, which allocates space for an array of four integer pointers. Also, since calloc automatically initializes its spaces to zero, all of these pointers are automatically set to null for us. 

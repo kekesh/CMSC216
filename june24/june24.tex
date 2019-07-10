@@ -11,12 +11,19 @@ caption=Linked List Node}
 \end{center}
 
 
-Note that the structure tag here is necessary here since we have a self-reference inside our definition of a node.
+Note that the structure tag inside of the typedef is necessary here since we have a self-reference inside our definition of a node.
 
-In order to represent a Linked List, we declare a pointer to the head by typing something like \verb!Node *head!. The pointer allows us to modify the Linked List inside of various functions.
+In order to represent a Linked List, we declare a pointer to the head by typing something like \verb!Node *head!. The pointer allows us to modify the Linked List inside of various functions. So, functions that modify the actual Linked List have function prototypes that take in a double pointer Node type.  
+
+
+For instance, a function which instantiates the Linked List might have header \verb!void create_list(Node **head)!, and its body would simply be \verb!*head = NULL!. 
+
+
+
+
 
 There are two noteworthy types of Linked Lists traversal: \begin{itemize}
-    \item The ``print traversal,'' which works by moving a current pointer forward after some processing 
+    \item The ``\vocab{print traversal},'' which works by moving a current pointer forward after some processing: 
     
     \lstset{
     caption=Print Traversal}
@@ -24,7 +31,10 @@ There are two noteworthy types of Linked Lists traversal: \begin{itemize}
     \lstinputlisting[language=c]{june24/june2402.c}\label{Print Traversal}
     \end{center}
     
-    \item The ``Tom and Jerry'' traversal, which works with two adjacent pointers. The left-most pointer allows us to look back and access previous elements 
+    If we need to visit every node in the list and do some processing, we perform the print traversal.
+    
+    
+    \item The ``\vocab{Tom and Jerry traversal}'', which works with two adjacent pointers. The left-most pointer allows us to look back and access previous elements. The two pointers move in parallel. 
     
     \lstset{
     caption=Tom and Jerry Traversal}
@@ -32,5 +42,16 @@ There are two noteworthy types of Linked Lists traversal: \begin{itemize}
     \lstinputlisting[language=c]{june24/june2403.c}\label{Tom and Jerry}
     \end{center}
 
+    This traversal allows us to add a node before or after any element. 
 \end{itemize}
 
+
+When we construct a Linked List, we will want to add nodes one by one. Creating a node requires three key steps: \begin{enumerate}
+    \item Allocate memory for the node.
+    \item Store data in the node.
+    \item Insert the node into the list.
+\end{enumerate}
+
+When we create a node, we write something like \verb!struct node *new_node! followed by the command \verb!new_node = malloc(sizeof(struct node)))!. Note that something like \verb!new_node = malloc(sizeof(new_node))! would be incorrect as \verb!new_node! is a pointer variable (this command would allocate $8$ bytes rather than the actual amount of space needed). 
+
+To change the data of a node, we can use the arrow operator by doing something like \verb!new_node->data = 5!. 
