@@ -57,7 +57,7 @@ Why do we use two's complement instead of, say, just adding an extra bit at the 
 With two's complement, The range of values that we can store with $n$ bits ranges from $-2^{n - 1}$ to $2^{n - 1} - 1$, inclusive.
 
 \subsubsection{Floats and Doubles}
-We can store floats and doubles by writing it in the form \begin{equation}
+We can store floats and doubles by writing the value we're storing in the form \begin{equation}
 \label{fp:rep}
 (-1)^{s} \cdot m \cdot r^{e},
 \end{equation}
@@ -77,4 +77,4 @@ The number of bits allocated for the radix, exponent, and mantissa are specified
 
 \subsection{Imprecision with Real Numbers}
 
-Some real numbers, like $1/3 \approx 0.33333$, have infinitely long decimal representations. This can create complications when we're storing these numbers because we only have finite space. In summary, some of these bits get cutoff, which can cause some small imprecisions when dealing with real numbers. 
+Some real numbers, like $1/3 \approx 0.33333$, have infinitely long decimal representations. This can create complications when we're storing these numbers because we are trying to store an infinite decimal with finite space. In summary, some of these bits get cutoff, which can cause some small imprecisions when dealing with real numbers. 

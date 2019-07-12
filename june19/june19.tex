@@ -69,7 +69,7 @@ caption=Malloc Example 2
 \lstinputlisting[language=c]{june19/june1902.c}
 \end{center}
 
-There aren't really any new concepts in this code segment. It should be carefully noted, however, that we check if the pointer returned from malloc and calloc is null after each call. It is important to do this for secret tests and release tests. The output of the program is \texttt{0 3 6}, and the memory allocated for the array is freed after this is printed. It's important to call \verb!free()! on a pointer that points to the \textit{start} of the array that we've allocated, otherwise freeing won't work.
+There aren't really any new concepts in this code segment. It should be carefully noted, however, that we check if the pointer returned from malloc and calloc is null after each call. The output of the program is \texttt{0 3 6}, and the memory allocated for the array is freed after this is printed. It's important to call \verb!free()! on a pointer that points to the \textit{start} of the array that we've allocated, otherwise freeing won't work.
 
 
 

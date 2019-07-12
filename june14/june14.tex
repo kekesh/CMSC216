@@ -13,9 +13,9 @@ The only thing that we can conclusively say about the size of the structure is t
 
 \subsection{Unions}
 
-A \vocab{union} is like a structure, except the memory is shared. That is, all of the fields share the same memory space (so you can only access one field at any given time). Consequently, the size of a union is \textit{always} the size of its largest field. 
+A \vocab{union} is like a structure, except the memory is shared. That is, all of the fields share the same memory space (so you can only access one field at any given time). Consequently, the size of a union is \textit{always} the size of its largest field. Unions are particularly used when memory is scarce. 
 
-Unions are particularly used when memory is scarce. 
+The declaration of a union is exactly the same as a structure (just replace every instance of \verb!struct! with \verb!union!), so I won't include any code examples of them.
 
 
 \subsection{More on Structures}
@@ -23,7 +23,7 @@ Unions are particularly used when memory is scarce.
 For the first midterm, it's important to remember that assigning one structure to another initializes corresponding values to each other. If there's an array within that structure, both structures will subsequently be pointing to the same array (i.e. changes will be reflected in both structures). However, it's still perfectly valid (and saves time) to just make an assignment whenever possible.  
 
 
-Although the assignment operator doesn't work with arrays, the assignment operator would work with two structures which contains an array. \\
+Although the assignment operator doesn't work with arrays, the assignment operator would work with two structures which contains an array. 
 
 
 The tag on a structure is \textbf{optional}. We can declare structures without a tag or a typedef such as in the following example:

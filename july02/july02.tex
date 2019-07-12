@@ -1,1 +1,219 @@
-\section{Tuesday, July 9, 2019}
+\section{Tuesday, July 2, 2019}
+No discussion today. Today is day two of Assembly.
+
+
+\subsection{Data Space Instructions}
+
+In order to transfer the contents of a register back into memory (like a variable), we can use the \verb!sts! instruction, which is short for ``store to data space.'' Using \verb!sts! in assembly is analogous to assigning a variable some value. On the other hand, we can use stored memory to write to a register using the \verb!lds! instruction, which is short for ``load direct from data space.'' The general syntax for \verb!sts! is \verb!sts [data destination], [register source]!. The general syntax for \verb!lds! is \verb!lds [register destination], [data source]!. 
+
+Another useful instruction is \verb!inc!, which simply increments the contents of a register. As we'd expect, the syntax for this instruction is just \verb!inc [register name]!.
+
+
+Consider the following code segment, which illustrates all three of these instructions:
+
+
+\lstset{language=[x64]Assembler}
+\lstset{
+caption=Storing and Loading to Data Spaces
+}
+\begin{lstlisting}
+;;; Global data
+    .data
+a:  .byte 0x2
+b:  .byte 0b00000100
+c:  .byte 0
+
+;;; Program code
+    .text
+
+.global main
+main:
+
+    call init_serial_stdio
+    lds     r18, a ; stores contents of a into r18.
+    lds     r19, b ; stores contents of b into r19.
+    push    r19 ; saves value of r19 on the stack.
+    add     r19, r18 ; adds contents of registers.
+    sts     c, r19 ; stores contents of r19 into c.
+    
+    lds r18, c ; stores contents of c into r19.
+    inc r18 ; increments r18
+    pop r19 ; restores r19
+    inc r19 ; increments r19
+    
+    cli ; stops the program
+\end{lstlisting}
+
+
+What's happening here?
+
+On Lines $3, 4,$ and $5$, we're just declaring three global variables: \verb!a!, \verb!b!, and \verb!c!. Like we saw yesterday, the \verb!.data! directive indicates that we're starting our data section, and the \verb!.byte! directive indicates that the value that follows should be stored in the specified variable. In this case, we store \verb!0x2! (hexadecimal for $2$) in \verb!a!, $100$ (binary for $4$) in \verb!b!, and $0$ in \verb!c!. The reason why we're using different base systems is just to clearly convey that it is allowed. 
+
+All of our variables have been initialized, so we can begin writing our code (officially, this is indicated by the \verb!.text! directive on Line $8$). In our main, we see an example of \verb!lds! in action: the instruction takes a register and some data, and it loads the contents of the data into the register. In this case, \verb!r18! stores \verb!2!, and \verb!r19! stores \verb!4!. The contents of \verb!r19! are pushed onto the stack for safekeeping. 
+
+
+The \verb!add! instruction on Line $17$ stores the contents of \verb!r19! and \verb!r18! and stores the sum in \verb!r19! (it overwrites the previous value, which is precisely why we pushed the original value onto the stack). On Line $18$, the \verb!sts! instruction is used to store the sum into variable \verb!c!. This value is incremented by one, the original contents of \verb!r19! are restored, and the contents of \verb!r19! are incremented by one. The final value stored in \verb!r18! is $7$. 
+
+
+
+\subsection{Instructions List}
+
+The list below summarizes some important instructions that we should become familiar with (we've already seen some of these): \begin{itemize}
+    \item \verb!ldi! initializes a register with a constant value. Its general syntax is \verb!ldi [register] [constant]!. For instance, \verb!ldi r24, 5! would set the contents of \verb!r24! to $5$. 
+    \item \verb!lds! loads data from memory into a register --- we saw this in the previous example.
+    \item \verb!sts! stores data from a register into memory --- we also saw this in the previous example.
+    \item \verb!clr! clears the contents of a register. Its general syntax is \verb!clr [register]!. After this instruction is executed, the contents of the register it was performed on becomes $0$.
+    \item \verb!add! is used to add the contents of two registers. Its general syntax is \verb!add [register1], [register2]!. After this instruction is executed, the contents of \verb!register1! are replaced with \verb!register1 + register2!. 
+    \item \verb!inc! is used to increment the value of a register by one. We saw this in the previous example. 
+    \item \verb!push! is used to push a register value onto the stack. Its syntax is \verb!push [register]!. 
+    \item \verb!pop! is used to move data from the top of the stack into another register. Its syntax is \verb!pop [register]!. Note that you don't have to pop to the same register that was pushed. There should be a one-to-one correspondence between \verb!pop! and \verb!push! instructions.
+    \item \verb!call! is used to call a function, as we saw with the putchar example yesterday.
+    \item \verb!ret! is used to return from a function.
+    \item \verb!nop! is short for ``no operation,'' and it does nothing. Why does it exist? To make our processor wait and do nothing.
+    \item \verb!mov! has syntax \verb!mov [destination register], [source register]!. It copies the contents of \verb!source register! into \verb!destination register!. Note that the name ``move'' is slightly misleading here - the contents of \verb!source register! aren't moving anywhere - they are being copied, not moved.
+\end{itemize}
+
+\subsection{Caller/Callee Saving}
+
+The $32$ registers that we use in Assembly are all global registers. What this means is that these registers are shared among every function, including the main. To illustrate why this matters, suppose we were to store $20$ in register \verb!r19! in the main. We then decide to call some function, which stores $100$ in the register \verb!r19! as a part of its processing. This change will also be reflected in the main (and everywhere else in the program). 
+
+Registers are shared across the entire program, which makes things more complicated. How can we avoid overwriting registers used by functions? The solution to this problem comes from two protocols that we use: \begin{enumerate}
+    \item \vocab{Caller-saved protocol}: When writing a function, we assume the programmer who called the function has already saved the contents of registers from \verb!r18! to \verb!r27!, \verb!r30!, and \verb!r31!. So, the function writer should be operating on only these registers, and it's up to the programmer to have already saved anything of importance in these registers. We are expected to only operate on these registers when writing our functions as well.
+    \item \vocab{Callee-saved protocol}: If a function writer wants to use registers \verb!r2! to \verb!r17!, \verb!r28!, or \verb!r29! inside of their function, they need to be saving the registers prior to using them. Furthermore, the contents of these registers need to be restored back to their original values before leaving the function.
+\end{enumerate}
+
+What do these protocols mean to us? It means that there is less work for both the function writer and the function caller. On one hand, the function writer can use several registers without worrying about overwriting important data. On the other hand, the function caller has a set of registers where they can store data and call a function with certainty that their data will not be overriden. \\
+
+To better understand these two protocols, consider a blackboard that is shared among different professors. The blackboard follows the caller-saved protocol: a professor who enters the classroom to teach is allowed to erase whatever is on the blackboard. It is assumed that any important information on the blackboard has already been recorded by the previous user. On the other hand, if the blackboard were callee-saved, the most recent user would have to restore the blackboard to however it originally was, prior to their use.  
+
+
+We can use the fact that registers are shared across the entire program to pass and return values to functions.
+
+\subsection{Arguments and Return Values}
+
+Unlike C, Assembly doesn't have function headers: a function declaration is just a label. So, how do we take in arguments and/or return values? Both of these tasks are accomplished through registers. If we have a lot of arguments or return values and we run out of registers, we can use the stack (but we won't need to worry about that). 
+
+
+
+When we're passing arguments to a function, we can just load the argument into a register for the function to use. Arguments are aligned to start in even-numbered registers, beginning at \verb!r24! and going downwards. Also, if we're passing an odd number of parameters, there will always be one free register above them. So, for instance, if we're passing in a single \verb!char! to a function, we would load the value of that character into \verb!r24!, and we would leave \verb!r25! empty as there is an odd number of parameters.
+
+The conventions for passing arguments to functions are illustrated below:
+\begin{itemize}
+    \item If we're passing an argument that's just one byte, the argument will go in \verb!r24! and \verb!r25! will be cleared.
+    \item If we're passing an argument that's two bytes, the arguments will go in \verb!r24! and \verb!r25! (note how there is no free register since there are two arguments). 
+    \item If we're passing four bytes of arguments, the arguments will go in \verb!r25, r24, r23, r22!, and there won't be any empty registers.  
+\end{itemize} 
+
+Once these registers have been loaded with the arguments, we can use the \verb!call! instruction to go inside of the function. The function will share the contents of these registers, and it will be able to perform any necessary processing. 
+
+
+
+How do we return values from functions? It's the same idea as passing arguments. The exact same convention for passing parameters. For instance, if the function returns one byte, the return value is loaded into register \verb!r24!. 
+
+
+Note that the conventions for passing arguments and returning values align with the caller/callee-saved protocol. Particularly, we are passing parameters through caller-saved registers. The function caller is expected to have already saved any important data in these registers, as the function will be changing the contents of these registers after processing.
+
+
+After introducing these concepts, let's look at an example that's very similar to what we saw yesterday:
+
+
+\lstset{
+caption=Assembly: Arguments and Return Values
+}
+\begin{lstlisting}
+    .text
+    
+.global main
+main:
+    call init_serial_stdio
+    
+    ; Printing 'A'
+    clr r25
+    ldi r24, 65
+    call putchar
+    
+    cli
+    sleep
+\end{lstlisting}
+
+
+The function \verb!putchar! from C takes in a single character as an argument. To pass in the argument `A,' we clear register \verb!r25! and load the ASCII value of `A' into \verb!r24!. This aligns with the convention we've previously discussed. Finally, we call \verb!putchar!, which is now free to do whatever it desires with these parameters. It will no longer be guaranteed that register \verb!r24! and \verb!r25! are how they were prior to the function call.
+
+
+
+\subsection{Accessing Memory}
+
+In Assembly, \verb!lo8! and \verb!hi8! can be used to extract the lower and higher $8$ bits of data (if we are passing in $2$ bytes of data, there will be two $8$ bit blocks). The instruction \verb!ldi r24, lo8(x)! would load the lower byte of variable \verb!x! into register \verb!r24!. 
+
+
+
+We have already seen that \verb!lds! and \verb!sts! are instructions that allow us to read and write to memory. Assembly has three pairs of registers that allow us to access memory. These pairs of registers are called \verb!X! (resides in registers \verb!r26! and \verb!r27!), \verb!Y! (resides in registers \verb!r28! and \verb!r29!), and \verb!Z! (resides in registers \verb!r30! and \verb!r31!). 
+
+
+\verb!X!, \verb!Y!, and \verb!Z! represent addresses in memory (like pointers). Conventionally, the low byte is stored in the even-numbered register, and the high byte is stored in the odd-numbered register. 
+
+
+Consider the following example:
+
+\begin{lstlisting}
+    .data
+pctd: 
+    .asciz  "%d "
+
+values:
+    .byte   15
+    .byte   16
+    .byte   17
+    .byte   18
+    
+    .text
+
+.global main
+main:
+
+    call init_serial_stdio
+    
+    lds r24, values
+    clr r25
+    call pint
+    ldi r24, 10
+    clr r25
+    call putchar
+    
+    ldi r26, lo8(values)
+    ldi r27, hi8(values)
+    ld r24, X
+    push r26 ; Caller-save
+    push r27
+    clr r25
+    ldi r24, 10
+    clr r25
+    call putchar
+    
+    pop r27
+    pop r26
+    adiw r26, 1 ; Move the pointer
+    
+    ld r24, X
+    clr r25
+    call pint
+    ldi r24, 10
+    clr r25
+    call putchar
+    
+    cli ; Terminate program
+    sleep 
+    ret
+\end{lstlisting}
+
+First off, the label \verb!values! is defined differently than what we've seen so far: there are multiple \verb!.byte! directives in its definition. The key thing to remember here is that a label is just an address in memory. Hence, one way we can interpret \verb!values! is the value $15$: if we were to load this value somewhere, the value $15$ would be loaded. We can alternatively interpret \verb!values! as the name of an array with contents $15, 16, 17$, and $18$.
+
+
+When we call \verb!pint! (the function for printing), $15$ is outputted. We then load the ASCII value for a new line, and we call \verb!putchar! to print a new line. 
+
+On Lines $25$ and $26$, we load the low byte and high bytes of \verb!values! into the registers \verb!r26!, and \verb!r27!. The registers \verb!r26! and \verb!r27! are special: they represent a register pointer, denoted by \verb!X!. Hence, on the subsequent line, we can use \verb!ld! to initialize \verb!r24! to whatever \verb!X! points to (note that we use \verb!ld! for register pointers instead of \verb!lds!). Finally, when we call \verb!pint! again, $15$ is printed again (as \verb!r24! now points to \verb!X!).
+
+Okay, now what if we want to print the other values in the array? We use pointer arithmetic, just like in C. The \verb!adiw! instruction is short for ``add immediate to word',' and it has syntax \verb!adiw [register], [number]!, and it increments the contents of \verb![register]! by \verb![number]!. This is exactly what's happening from Lines $37$ to $44$. These lines increment \verb!X! and print \verb!16! along with a new line character.
+
+
+Tomorrow, we will pick up from this point and do more Assembly.
