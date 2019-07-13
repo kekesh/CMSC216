@@ -27,8 +27,7 @@ We can call \verb!chmod! recursively on a directory using the \verb!-r! flag.
 
 % \subsubsection{Terminology}
 
-\vocab{Assembly} is a low-level, readable translation of machine language. It is a programming language that we work with when we want to see what the computer is doing. There are many assembly languages out there - in this class, we will use AVR Assembly. We can generate the set of assembly instructions from a C program by compiling with the \verb!-S! flag when using \verb!avr-gcc!. This is not allowed in this class. 
-
+\vocab{Assembly} is a low-level, readable translation of machine language. It is a programming language that we work with when we want to see what the computer is doing. There are many assembly languages out there - in this class, we will use AVR Assembly. We can generate the \verb!.S! file corresponding to the assembly instructions of a \verb!.c! file by compiling with the \verb!-S! flag when using \verb!avr-gcc!. This is not allowed for projects/exercises.
 
 
 
@@ -65,13 +64,15 @@ caption=Assembly Example
 \lstinputlisting[language={[x86masm]Assembler}]{july01/july0101.asm}
 \end{center}
 
+Before we start analyzing this code, it should first be noted that lines beginning with dots are directives, lines ending with colons are labels, lines beginning with a semicolon are comments, and everything else is an instruction.
+
 What observations can we make? 
 \begin{itemize}
     \item Comments begin with a single semicolon, but we sometimes prefer to use more semicolons for sylistic reasons.
     \item Symbolic constants are defined with \verb!.set! directive followed by a target text, a comma, and a replacement text. The target text never actually makes it to the machine code; it is processed by the assembler.
     \item By writing the \verb!.data! directive, we indicate that what follows is a data section. We create labels by having some text, followed by a colon. Here, our label is \verb!x!, which stores the memory address of the value $6$. What follows \verb!.byte! indicates the entity being stored at the memory address. This can be written in decimal (as it is), hexadecimal, or even binary. 
     \item The \verb!.text! directive indicates that we're done with our initial setup, and everything that follows is actual code. This is a very important directive to have.
-    \item A function, like main, also begins with a label. Moreover, functions end with \verb!ret!. 
+    \item The \verb!.global main! directive allows \verb!main! to be called outside of the current file. Functions, including \verb!main!, begin with labels. Also, functions end with \verb!ret!. 
     \item To call a function, we use the call instruction \verb!call init_serial_stdio!. We will always call this function to permit us to use input and output.
     \item To print the ASCII value of `A,' we need to first load a value into a register using \verb!ldi!. In our program, we move $65$ to register $24$. 
     \item After we load into register $24$, we clear register $25$ with \verb!clr!. Why do we clear register $25$? Because \verb!putchar()! assumes that the value it will display can be found in registers $24$ and $25$. This is a rule defined by gcc. So we clear register $25$ to contain no data.

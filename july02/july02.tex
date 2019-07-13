@@ -59,7 +59,7 @@ The \verb!add! instruction on Line $17$ stores the contents of \verb!r19! and \v
 \subsection{Instructions List}
 
 The list below summarizes some important instructions that we should become familiar with (we've already seen some of these): \begin{itemize}
-    \item \verb!ldi! initializes a register with a constant value. Its general syntax is \verb!ldi [register] [constant]!. For instance, \verb!ldi r24, 5! would set the contents of \verb!r24! to $5$. 
+    \item \verb!ldi! initializes a register with a constant value. Its general syntax is \verb!ldi [register] [constant]!. For instance, \verb!ldi r24, 5! would set the contents of \verb!r24! to $5$. We can only load constants to the registers \verb!r16!, $\ldots$, \verb!r31! (with the exception of \verb!clr!, which loads in $0$).  
     \item \verb!lds! loads data from memory into a register --- we saw this in the previous example.
     \item \verb!sts! stores data from a register into memory --- we also saw this in the previous example.
     \item \verb!clr! clears the contents of a register. Its general syntax is \verb!clr [register]!. After this instruction is executed, the contents of the register it was performed on becomes $0$.
@@ -72,6 +72,8 @@ The list below summarizes some important instructions that we should become fami
     \item \verb!nop! is short for ``no operation,'' and it does nothing. Why does it exist? To make our processor wait and do nothing.
     \item \verb!mov! has syntax \verb!mov [destination register], [source register]!. It copies the contents of \verb!source register! into \verb!destination register!. Note that the name ``move'' is slightly misleading here - the contents of \verb!source register! aren't moving anywhere - they are being copied, not moved.
 \end{itemize}
+
+One way to remember the syntax of some of these instructions is to note that, when we're writing to a register, the first register is always the target register where the result is being written to. 
 
 \subsection{Caller/Callee Saving}
 
@@ -206,7 +208,9 @@ main:
     ret
 \end{lstlisting}
 
-First off, the label \verb!values! is defined differently than what we've seen so far: there are multiple \verb!.byte! directives in its definition. The key thing to remember here is that a label is just an address in memory. Hence, one way we can interpret \verb!values! is the value $15$: if we were to load this value somewhere, the value $15$ would be loaded. We can alternatively interpret \verb!values! as the name of an array with contents $15, 16, 17$, and $18$.
+First off, we see a new directive: \verb!.asciz!. This just indicates that we are declaring a string literal.
+
+Next, we note the label \verb!values! is defined differently than what we've seen so far: there are multiple \verb!.byte! directives in its definition. The key thing to remember here is that a label is just an address in memory. Hence, one way we can interpret \verb!values! is the value $15$: if we were to load this value somewhere, the value $15$ would be loaded. We can alternatively interpret \verb!values! as the name of an array with contents $15, 16, 17$, and $18$.
 
 
 When we call \verb!pint! (the function for printing), $15$ is outputted. We then load the ASCII value for a new line, and we call \verb!putchar! to print a new line. 

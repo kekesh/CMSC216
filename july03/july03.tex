@@ -1,10 +1,101 @@
-\section{Wednesday, July 10, 2019}
+\section{Wednesday, July 3, 2019}
+Today is the last day of Assembly. Before we start, here's some quick review from the past two classes: \begin{itemize}
+    \item Assembly programs are written in a \verb!.S! file.
+    \item There is a \verb!.data! directive, which denotes the portion of the code where we define data (like variables).
+    \item A label represents a memory address (it can be viewed as a pointer to a variable or a function). 
+    \item A value in memory is defined using the \verb!.byte! directive. Hexadecimal, decimal, or binary are all permitted.
+    \item The \verb!.global main! directive is like the \verb!extern! keyword in C---it indicates that the function can be accessed from outside of the current file.
+    \item The \verb!lds [register], [data]! instruction stores \verb!data! into the contents of \verb!register!. Similarly, \verb!ldi [register], [constant]! allows us to load a constant value to \verb!register!. 
+    \item The \verb!clr [register]! instruction clears the contents of \verb!register! to zero. 
+    \item Assembly has a built-in pointer register, denoted \verb!X!, which represents the combination of registers \verb!r26! and \verb!r27!. (Why do we need two registers? Memory addresses are $16$ bits, or $2$ bytes, so they need two bytes).
+    \item To initialize a pointer register like \verb!X!, we use \verb!ldi! along with \verb!lo8! and \verb!hi8! on \verb!r26! and \verb!r27!, respectively. We use these directives on whatever value we want \verb!X! to point to.
+    \item To load the contents of a register pointer into another register, we can use the \verb!ld! instruction in the form \verb!ld [destination register], [register pointer]!. This is the C-equivalent of dereferencing a pointer. If we now increment \verb!r26!, we can write \verb!adiw r26, 1! to move the pointer \verb!X! by one. Using \verb!inc! would also work, but it's not great to use since with register pointers as it only operates on one register. Assembly also supports a \verb!+! operator. The instruction \verb!ld r24, X+! would load the contents of \verb!X! to \verb!r24! and move the pointer by one. 
+    \item To save a value in a register, we use \verb!push! in the form \verb!push [register]! to push the contents of the register onto the stack. You need to have one \verb!pop! for every \verb!push!. 
+\end{itemize}
+
+\subsection{More on Register Pointers}
+Consider the following code segment, which is an example of writing to memory:
 
 
-\subsection{System calls}
-A \vocab{system call}  
+\lstset{
+caption=Assembly: Register Pointers
+}
+\begin{lstlisting}
+
+;;; Example - writes the values 77 and 99 to memory using sts and st; 
+;;; Also using X, Y, Z register pointers
+
+        .data
+pctd:
+        .asciz "%d "
+
+values: ; represents data memory area where we will write
+        ; note we are not using any .byte      directive
+
+        .text
+
+.global main
+main:
+        call init_serial_stdio
+
+        push r29                ; needs to save r29,r28 (callee-saved)
+        push r28
+
+        ldi r18, 77
+        sts values, r18         ; assigning 77 to location values (using sts)
+
+        ldi r28, lo8(values)    ; reading first value using Y (r29:r28)
+        ldi r29, hi8(values)    ; r29:r28 = values
+        ld  r24, Y+             ; using Y+ (increases pointer by one location)
+        clr r25                 ; printing the value
+        call pint
+
+        ldi r18, 99             ; writing location after first entry
+        st Y, r18               ; using st (NOT sts)
+        ldi r30, lo8(values)    ; using Z pointer register to read value written
+        ldi r31, hi8(values)    
+        adiw r30, 1             ; moving forward Z pointer one position
+        ld r24, Z               ; reading value written
+
+        clr r25                 ; printing value
+        call pint
+
+        clr r25                 ; newline
+        ldi r24, 0xa
+        call putchar
+
+        pop r28
+        pop r29
+
+        cli                     ; stopping program
+        sleep
+
+        ret
+
+pint:
+        ;; prints an integer value, r22/r23 have the format string
+        ldi r22, lo8(pctd)      ; lower byte of the string address
+        ldi r23, hi8(pctd)      ; higher byte of the string address
+        push r25
+        push r24
+        push r23
+        push r22
+        call printf
+        pop r22
+        pop r23
+        pop r24
+        pop r25
+
+        ret
+\end{lstlisting}
 
 
-\subsection{Processes & Threads}
+Everything up to the main is what we're used to. Note, however, that the \verb!values! label doesn't have any \verb!.byte! directives---all this means is that the memory address corresponding to \verb!values! hasn't been initialized.
 
-What is the relationship between processes and threads? 
+In this example, we'll be using the \verb!Y! register pointer (there's no particular reason why we're using \verb!Y!---we could have used \verb!X! or \verb!Z! instead), which corresponds to the registers \verb!r28! and \verb!r29!. So, we save the contents of these registers, and we load the low and high byte of \verb!r18! (which stores $77$) into them. On Line $26$, we load what \verb!Y! is pointing to into \verb!r24!, and increment \verb!Y! by one (so \verb!Y! is now pointing to a new uninitialized area of memory). Next, the value $77$ is printed by calling \verb!pint!.
+
+Line $30$ updates the contents of \verb!r18! to $99$, and line \verb!31! stores $99$ into \verb!Y!. Note that we use \verb!st!, which works with register pointers, instead of \verb!sts!. Lines $32$ to $33$ initialize the register pointer \verb!Z!, and Line $34$ moves \verb!Z! forward by one (\verb!Z! is now pointing to $99$). Thus, loading this value into \verb!r24! and calling \verb!pint! prints out $99$.
+
+\subsection{Instruction Encoding}
+
+
