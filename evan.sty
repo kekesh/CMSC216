@@ -567,11 +567,12 @@ Last Revision: \today
 		\tikzcdset{row sep/normal=3.14em,column sep/normal=3.14em}
 	\fi
 
-	%%fakesection Page Setup
+	%%fakesection 
 	\ifevanfancy
 		\@ifundefined{KOMAClassName}
 		{
-			\usepackage{fancyhdr}
+	
+	    	\usepackage{fancyhdr}
 			\setlength{\headheight}{0.75in}
 			\setlength{\oddsidemargin}{0in}
 			\setlength{\evensidemargin}{0in}
