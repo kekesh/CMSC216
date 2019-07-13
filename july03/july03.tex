@@ -67,7 +67,7 @@ main:
         pop r28
         pop r29
 
-        cli                     ; stopping program
+           cli ; stopping program
         sleep
 
         ret
@@ -96,6 +96,150 @@ In this example, we'll be using the \verb!Y! register pointer (there's no partic
 
 Line $30$ updates the contents of \verb!r18! to $99$, and line \verb!31! stores $99$ into \verb!Y!. Note that we use \verb!st!, which works with register pointers, instead of \verb!sts!. Lines $32$ to $33$ initialize the register pointer \verb!Z!, and Line $34$ moves \verb!Z! forward by one (\verb!Z! is now pointing to $99$). Thus, loading this value into \verb!r24! and calling \verb!pint! prints out $99$.
 
-\subsection{Instruction Encoding}
+\subsection{Instruction Encoding and the Status Register}
+
+In Assembly, an instruction is represented by a set of bits which are assembled into a set of zeros and ones. But, not all of these bits are telling the assembler what operation to perform. The portion of the bits that encode what operation should be performed is known as the \vocab{opcode}. 
+
+So, what do the rest of the bits represent? The short answer is that it is dependent on the instruction we're considering. For instance, if we're dealing with \verb!ldi!, we'd have the opcode, another portion to store the registers, and another portion to store the values of the registers. 
+
+The number of bits necessary to encode an instruction also varies. In AVR, however, we're guaranteed that instructions are either two bytes or four bytes. When memory is scarce, choosing the correct instruction is vital to saving memory.
 
 
+In an Assembly program, there's a register---known as the \vocab{status register}---that keeps track of recent operations (particularly mathematical operations). We can view what's inside of the status register by typing \verb!info r! in gdb. Why is the status register important? It allows us to perform conditional executions, known as \vocab{branching}. 
+
+\subsection{Branch Instructions}
+
+We can use the status register to perform conditional execution of statements. This is done with the \verb!cp! instruction, which has syntax \verb!cp [register1] [register2]!. This is used to compare the contents of two registers.
+
+Consider the following example:
+
+\begin{lstlisting}
+;;; Example - if a == b prints 'Y' else prints 'N'
+;;; Change a and b to see different outputs
+
+    .set LETTER_N, 'N'
+    .set LETTER_Y, 'Y'
+
+;;; Global data
+    .data
+
+a:      .byte 0x6              
+b:      .byte 0x5
+
+;;; Program code
+        .text                 
+
+.global main                  
+main:                          
+        call init_serial_stdio
+
+        lds r18, a             ; reading a from memory  
+        lds r19, b             ; reading b from memory
+        cp r18, r19            ; comparing registers
+        breq 1f                ; 1 is the target: f represents forward
+        ldi  r24, LETTER_N     ; store N
+        jmp 2f
+1:      ldi r24, LETTER_Y      ; store Y
+
+2:      clr r25                ; printing result
+        call putchar          
+
+        clr r25                ; print newline
+        ldi r24, 10            
+        call putchar
+    
+        cli                    ; stopping program
+        sleep                          
+
+        ret                   
+\end{lstlisting}
+
+In this program, we read the value of \verb!a! and \verb!b! into registers \verb!r18! and \verb!r19!. These values are compared with \verb!cp! on Line $22$, which has syntax \verb!cp [register1], [register2]!. The instruction \verb!breq! is short for ``branch if equal,'' and its syntax is \verb!breq [label]!. Pretty much, this instruction utilizes the status register to check the value of the preceding comparison. If the comparison indicated that the two variables were equal, the program jumps to the target label (here, the \verb!f! indicates that we're jumping forward). 
+
+Suppose $a \neq b$. In this case, we don't jump to label $1$. Instead, we'll store the letter \verb!N! in \verb!r24!. The next instruction, \verb!jmp!, indicates an unconditional jump (it always gets executed). Hence, once \verb!N! is loaded into \verb!r24!, we'll jump forward to label $2$, and we'll print the result along with a new line.
+
+
+Now suppose $a = b$ holds. In this case, we'll jump over the statement that loads \verb!N! into \verb!r24!. Instead, we'll load \verb!Y! into \verb!r24!, and we'll continue from there and print the character along with a new line.
+
+
+The advantage of using \verb!cp! is that we don't have to modify the registers.
+
+Some other branch instructions are listed below: \begin{itemize}
+    \item \verb!cpi [register], [constant]! compares the contents of a register to a constant.
+    \item \verb!tst [register]! tests whether a register is non-positive.
+    \item \verb!breq [label]! branches to \verb!label! if the previous comparison indicated an equality.
+    \item \verb!brne [label]! branches to \verb!label! if the previous comparison did not indicate an equality.
+    \item \verb!brge [label]! branches to \verb!label! if the previous comparison indicated \verb!register1! was greater than or equal to \verb!register2!. This should be used on signed integers.
+    \item \verb!brlt [label]! branches if \verb!register1! is strictly less than \verb!register2!. This instruction should also be used for signed integer.
+\end{itemize}
+
+It's important to remember that branching instructions always look at the last result with the status register. Thus, comparison instructions need to come immediately before the branch instructions.
+
+
+Here's another example.
+
+\lstset{
+caption=Assembly: Do-While Loop
+}
+
+\begin{lstlisting}
+;;; Example - prints values 1 to 5 (do while)
+
+;;; Global data
+    .data
+
+pctd:
+        .asciz "%d "         
+
+upper_limit: .byte 0x5              
+
+;;; Program code
+        .text                 
+
+.global main                  
+main:                          
+        call init_serial_stdio
+
+        push r15               ; callee-save 
+        push r16               
+
+        lds r15, upper_limit   ; upper limit
+        ldi r16,1              ; loop starts, r16 is the iteration variable
+
+1:      mov r24, r16           ; printing value
+        clr r25                
+        call pint
+
+        inc r16                ; increasing iteration variable
+        cp r15, r16           ; checking whether we reach limit
+        brge 1b                ; go back as long as r15 >= r16
+
+        clr r25                ; newline
+        ldi r24, 10            
+        call putchar
+    
+        pop r16                ; restoring registers
+        pop r15
+    cli                    ; stopping program
+        sleep                          
+
+        ret                    
+
+pint:
+        ;; prints an integer value, r22/r23 have the format string
+        ldi r22, lo8(pctd)      ; lower byte of the string address
+        ldi r23, hi8(pctd)      ; higher byte of the string address
+        push r25
+        push r24
+        push r23
+        push r22
+        call printf
+        pop r22
+        pop r23
+        pop r24
+        pop r25
+
+        ret
+\end{lstlisting}
+
+There isn't anything confusing here. Register \verb!r15! stores the upper limit of loop. After each iteration. we compare the iteration variable, stored in \verb!r16!, to the upper limit. If we haven't hit the limit, we branch back to the start of the loop. Similarly, we could implement a while loop by performing an initial comparison.
