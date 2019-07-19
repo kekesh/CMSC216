@@ -170,7 +170,9 @@ Some other branch instructions are listed below: \begin{itemize}
     \item \verb!breq [label]! branches to \verb!label! if the previous comparison indicated an equality.
     \item \verb!brne [label]! branches to \verb!label! if the previous comparison did not indicate an equality.
     \item \verb!brge [label]! branches to \verb!label! if the previous comparison indicated \verb!register1! was greater than or equal to \verb!register2!. This should be used on signed integers.
-    \item \verb!brlt [label]! branches if \verb!register1! is strictly less than \verb!register2!. This instruction should also be used for signed integer.
+    \item \verb!brlt [label]! branches if \verb!register1! is strictly less than \verb!register2!. This instruction should also be used for signed integers.
+    \item \verb!brlo [label]! branches to \verb!label! if the comparison is strictly less than. It is used with signed integers.
+    \item Finally, \verb!brsh [label]! branches to \verb!label! if the comparison is greater than or equal to. It is used with unsigned integers.
 \end{itemize}
 
 It's important to remember that branching instructions always look at the last result with the status register. Thus, comparison instructions need to come immediately before the branch instructions.

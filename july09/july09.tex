@@ -1,0 +1,30 @@
+\section{Tuesday, July 9, 2019}
+Today, discussion is really short since we had a quiz. Just a couple of examples on encapsulation, abstraction, and some other miscellaneous things in C.
+
+
+\subsection{Encapsulation and Abstraction}
+
+In general, C has limited support for encapsulation. One of the primary features that C provides for encapsulation is the \vocab{incomplete type}. An example of an incomplete type would be something like, \verb!struct my_type!. This indicates to the compiler that \verb!my_type! is a structure, but it does not provide any information about its members. This allows the user to complete the type elsewhere. 
+
+As a more illustrative example, suppose we want to hide the following structure:
+
+
+\lstset{
+caption=Secret Structure
+}
+\begin{center}
+\lstinputlisting[language=c]{july09/july0901.c}
+\end{center}
+
+We can then create a separate \verb!.h! header file with all of our function prototypes. This file will contain the line \verb!struct secret;! to declare the structure \verb!secret! (even though the definition of \verb!secret! is not in the \verb!.h! file).  If we then compile these files, along with a main with other functions, the object file will hide the implementation of the \verb!secret! structure. We'd give our program users the \verb!.o! and the \verb!.h! file, which abstracts the function and structure implementations from the user (but, they can still use the functions since they have the function prototypes).
+
+
+
+
+\subsection{Miscellaneous}
+
+\begin{itemize}
+    \item Recall that dereferencing a null pointer results in a segmentation fault. Although this is true, we wouldn't get a segmentation fault if we dereference the pointer inside of a \verb!sizeof()! call. For example, if we declare \verb!int *p = NULL!, a subsequent \verb!sizeof(*p)! expression doesn't result in a segmentation fault.
+    \item Void pointers can be casted to any type of pointer -- it's up to the programmer to make sure we're doing things right.
+\end{itemize}
+

@@ -1,1 +1,179 @@
 \section{Monday, July 8, 2019}
+When performing branching instructions, it's important to remember to use the one corresponding to the correct type (there are different instructions for unsigned vs signed integers). Also, keep in mind that \verb!adiw! (or post-incrementation) should be used for moving a pointer rather than \verb!inc! (or \verb!dec! to decrement). 
+
+We've already seen the \verb!add! instruction. There are also \verb!sub! and \verb!mul! instructions to subtract and multiply the contents of two registers; their syntaxes is exactly the same. 
+
+The \verb!movw! has syntax \verb!movw [register1] [register2]!, and it copies the register \textbf{pair} \verb!register2! to \verb!register1!. This instruction is useful when moving the results of multiplication. 
+
+The \verb!lsl! and \verb!lsr! perform left and right bit-shifts, respectively. They both require one register as input, and the result is that the contents of the register are either multiplied or divided by two (respectively). Unfortunately, there is no division operation; however, one could implement it themselves.
+
+\subsection{Large Addition and Unsigned Multiplication}
+Here, we'll discuss some constructs surrounding math in Assembly.
+
+Consider the following code segment:
+
+
+\lstset{
+caption=Unsigned Multiplication
+}
+\begin{lstlisting}
+;;; Example - Illustrates how to use mul (unsigned multiply)
+ 
+;;; Global data
+
+        .data                 
+
+pctd:   .asciz "%d "           ; defines a string (nul terminated)
+a:      .byte 200
+b:      .byte 150
+
+;;; Program code
+        .text                 
+
+.global main                  
+main:                          
+        call init_serial_stdio
+
+        clr r25
+        lds r18, a             ; reading value for a
+        lds r24, b             ; reading value for b
+        add r24, r18           ; just using add is wrong for 200 and 150
+        adc r25, r25           ; we need adc
+        push r24               ; caller save
+        push r25
+        call pint
+        call prt_newline
+        pop r25                ; restoring caller save
+        pop r24 
+
+        adiw r24, 5            ; adds five to previous result (r25:r24 is updated) 
+        call pint
+        call prt_newline
+         
+        ldi r24, 8             ; multiplication
+        ldi r25, 6 
+        mul r24, r25           ; result in r1:r0
+        movw r24, r0           ; copies r1:r0 to r25:r24
+        clr r1                 ; we should always make sure is back to 0 
+
+        call pint              ; printing multiplication result
+        call prt_newline
+
+        ldi r24, 32            ; multiplying by 2
+        lsl r24 
+        call pint
+        call prt_newline
+
+        ; next example shows we need to use brlo with unsigned
+        ldi r24, 2             ; comparison between r24 and 11
+        cpi r24, 11            ; the smaller will be printed
+        brlt 1f                ; try r24 with 5, 199 (fails)
+        ldi r24, 11            
+1:      call pint
+        call prt_newline
+
+    cli                    ; stopping program
+        sleep                          
+
+        ret                    
+
+prt_newline:                   
+        ;; prints new line
+        clr r25
+        ldi r24, 10
+        call putchar
+
+        ret
+
+pint:
+        ;; prints an integer value, r22/r23 have the format string
+        ldi r22, lo8(pctd)     ; lower byte of the string address
+        ldi r23, hi8(pctd)     ; higher byte of the string address
+        push r25
+        push r24
+        push r23
+        push r22
+        call printf
+        pop r22
+        pop r23
+        pop r24
+        pop r25
+
+        ret
+\end{lstlisting}
+
+
+We can briefly recap what we already know to explain what's going on here.
+
+
+At first, the variable \verb!pctd! is declared as a string, and \verb!a! and \verb!b! are declared as integers. Subsequently, we compute the sum of \verb!a! and \verb!b! in \verb!r24!. But since $a + b = 200 + 150 = 350 > 256$, we cannot store the contents of the sum in the eight bit register \verb!r24! alone. So, how do we fix this issue? We can make use of the \verb!r25! register.
+
+It turns out that there's an \verb!adc! instruction with format \verb!adc [destination] [source]!, which helps us deal with overflows (it's short for ``add with carry"). When we perform the \verb!add r24, r18! instruction, the bits that don't overflow are added correctly. If there is a carry from an \verb!add! instruction, a special bit in the status register is marked, and the value of the carry is kept for safekeeping. Basically, the \verb!adc! instruction allows us to perform addition that exceeds $8$ bits inside of a register pair. If we know that the numbers we're dealing with are small, we don't need to worry about a carry. We need at most an $(n + 1)$-bit number to represent the sum of two $n$ bit numbers.
+
+
+After this addition is performed, we push \verb!r24! and \verb!r25! for safekeeping (note that we can't clear \verb!r25! as we usually do---this would remove our carry value), and we call \verb!pint! to print the sum. As we'd expect, the sum is $350$. Moreover, now we need to perform the \verb!adiw! instruction to add to this quantity (\verb!adiw! acts on a register pair, whereas \verb!add! doesn't). Now we move to unsigned multiplication.
+
+
+
+On Lines $34, 35$, and $36$, we load $8$ into \verb!r24!, $6$ into \verb!r24!, and subsequently multiply the two numbers. Since the product of two $8$-bit numbers is at most a $16$-bit number, we require two registers to hold the results of multiplication. By default, Assembly moves the results of the \verb!mul! instruction to the \verb!r0:r1! register pair. We should retrieve these values using \verb!movw! immediately since the register pair \verb!r0:r1! is temporary. Also, by convention, we clear \verb!r1! back to zero (not \verb!r0!!). Finally, we discuss bit-shifting. First, a simple example, which will be followed by a more intricate one.
+
+On Lines $43$ and $44$, we load $32$ into \verb!32! and call the \verb!lsl! instruction (which is short for ``logical shift left") to perform a left bit shift. The resulting value in \verb!r24! is $64$. This was a very easy example.
+
+
+
+Between Lines $49$ and $54$, we appear to be printing the value stored in \verb!r24! if it's less than $11$, and $11$ otherwise. However, we're using \verb!brlt! to compare, which is intended for signed integers (the unsigned analogue would be \verb!brlo!). Although the example would work for the values provided (along with several other values), if we were to load $5$ into \verb!r24! and compare it against $199$, we would unexpectedly print $199$. Why? The two's complement signed representation of $199$ is less than $5$. This example emphasizes the importance of using the correct branch instruction. 
+
+
+\subsection{Even More on Register Pointers}
+
+We've already seen that something like \verb!ld [register] X+! loads the contents of \verb!X! into \verb!register! and subsequently moves \verb!X! forward one. We can also pre-decrement our register pointer with, \verb!ld [register] -X!. There is no post-decrementation or pre-incrementation.
+
+It's important to remember that using register \verb!Y! requires callee-saved registers, meaning that we need to push registers \verb!r28! and \verb!r29! prior to using them. As a result, it's usually a good idea to utilize the \verb!X! and \verb!Z! pointers prior to using the \verb!Y! pointer (we'd lose points on exam if we needlessly used the \verb!Y! pointer when it isn't necessary).
+
+
+The increment and decrement operations don't affect the status register. So, if we were to perform a comparison, and increment our register pointer, we'd still be able to perform branching instructions as we'd want.
+
+
+Another helpful instruction is \verb!ldd!, which has syntax \verb!ldd [register], [pointer] + [constant]!. This instruction \textbf{only works} on the \verb!Y! and \verb!Z! pointers, and it simply loads the location pointed to by \verb!pointer + constant! into \verb!register! without actually modifying \verb!pointer!. 
+
+
+\subsection{The Call Stack and Recursion}
+So far, we've been using the stack to save values using the \verb!push! and \verb!pop! instructions. The stack can also be used to support function calls, which is particularly useful when implementing recursive programs.
+
+
+When you call a function, the address of the instruction that follows the call is placed on top of the stack. When the \verb!ret! instruction is executed at the end of the function, whatever is on top of the stack (i.e. the instruction after the terminating function) is executed next. What does this mean to us? It emphasizes the importance of a one-to-one mapping between \verb!push! and \verb!pop! calls. If you're using the stack to preserve a value, and the correct number of \verb!pop!s aren't called, the \verb!ret! instruction of the function call will return to an invalid address.  \\
+
+The following program computes the factorial of a number through recursion:
+
+\lstset{
+caption=Assembly: Factorial
+}
+\begin{lstlisting}
+.global factorial
+factorial:
+       ;; recursive computation of factorial
+       tst r24             ; base case check (if value == 0)
+       breq 1f
+       push r24
+       dec r24
+       clr r25
+       call factorial      ; recursive call
+       pop r23             ; (original value of r24)
+       mul r24, r23        ; factorial(n - 1) * n
+       movw r24, r0        ; copies r1:r0 to r25:r24 
+                           ; movw is a register pair copy
+       clr r1              ; making sure is 0
+       jmp 2f
+1: 
+       clr r25             ; base case (value of 1)
+       ldi r24, 1
+
+2:         
+       ret
+\end{lstlisting}
+
+This is self-explanatory. We've got a base case and a recursive call. What's important to keep in mind when tracing this program is that \verb!call factorial! will result in the factorial of $n - 1$, which will be stored in register \verb!r24!. That's why we pop to \verb!r23! instead of \verb!r24! (so the result isn't overridden). \\
+
+
+
+Starting on Wednesday, we'll discuss process control, which is the last big topic of our class.

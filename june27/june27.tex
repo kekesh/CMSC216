@@ -46,7 +46,7 @@ The two most common formats of representing characters are listed below: \begin{
     \item \vocab{Unicode} is another common format. It stands for Unicode Transformation Format, and there are a few different versions. UTF-32 allows us to represent any character in any language (used by the Government), UTF-16 is the most popular, and UTF-8 provides backwards compatibility with ASCII.
 \end{enumerate}
 \subsubsection{Integers}
-When we're representing unsigned integers, the representation is more straightforward - all of the numbers are stored using binary. Now, this works pretty easily for positive integers, but what if we want to represent a negative number? It turns out that the solution comes using a convention called \vocab{two's complement}. 
+When we're representing unsigned integers, the representation is more straightforward - all of the numbers are stored using binary. Now, this works pretty easily for positive integers, but what if we want to represent a negative number? The solution comes using a convention called \vocab{two's complement}. 
 
 
 Under two's complement, the positive value of a number is just its binary representation with its leftmost bit equal to $0$. To obtain a negative value, we invert all of the bits of the corresponding positive value, and we add $1$. The eight bits \verb!00000101! typically correspond to the decimal number $+5$. Under the two's complement convention, the number $-5$ can be represented by \verb!11111011!.
