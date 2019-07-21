@@ -96,9 +96,27 @@ There are two types of endianness that we are concerned with: \begin{itemize}
 \end{itemize}
 
 
-Grace runs using little Endian.
+Consider the hexadecimal number \verb!0x01234567!. The following image illustrates how this number would be represented in Big Endian versus Little Endian:
+
+\begin{center}
+\includegraphics[width=\textwidth, height=4cm]{june28/endianness}
+\label{conversiontable:1}
+\end{center}
+
+Pretty much, the Little Endian representation is the opposite of what we'd expect. 
+
+
+Here's a code segment that allows us to determine whether a computer architecture runs in Big Endian or Little Endian
 
 
 
+\lstset{
+caption=Determining Endianness}
+\begin{center}
+\lstinputlisting[language=c]{june28/june2802.c}\label{Determining Endianness}
+\end{center}
+
+Why are we using a character pointer? Since a character is one byte, iterating with a character pointer allows us to move byte-by-byte through the hexadecimal digits.
 
 
+Grace runs in Little Endian.
