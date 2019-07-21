@@ -119,7 +119,7 @@ If the program doesn't exist, we'll exit with the error code \verb!EX_OSERR!. Th
 
 
 With fork, exec, and waiting, we've got everything we need to build our own shell. There are two types of commands we need to handle: \begin{itemize}
-    \item Unix commands: These don't require forking, like \verb!ls!, \verb!cat!, and \verb!pwd!.
+    \item Unix commands: These usually don't require forking.
     \item Shell commands: These are built-in to a shell; they typically involve forking. This includes \verb!cd!, \verb!set!, and \verb!setenv!.
 \end{itemize}
 
