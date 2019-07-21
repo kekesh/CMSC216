@@ -132,5 +132,13 @@ The \verb!getpid()! and \verb!getppid()! functions return the PID of the process
 Recall that the newline character, \verb!\n!, is used to flush the buffer. If we use \verb!printf! without the new line character, whatever we're printing is placed in memory; it isn't printed until the buffer is flushed. So, if we print a statement without flushing the buffer prior to forking a process, the buffer also gets duplicated. Consequently, if we perform another \verb!printf! statement (after the \verb!fork! call), the message that came before the \verb!printf! will be printed twice. Long story short, it's usually a good idea to make sure the buffer has been cleared prior to forking. 
 
 
-Now let's look at an application of forking:
+Now let's look at an application of forking: 
 
+\lstset{
+caption=Forking 3
+}
+\begin{center}
+\lstinputlisting[language=c]{july10/july1003.c}\label{Forking Example 3}
+\end{center}
+
+This is pretty self-explanatory. We're reading in two integers, both of which are stored in the stack. Then, we call \verb!process_values!. If we're the parent process, we'll check whether \verb!x! is even or odd, and if we're the child process, we'll check whether \verb!y! is even or odd. Note that we execute \verb!exit(0)! at the end of the child's code in order to terminate the child process. We need this because, otherwise, the statement ``Done in Main" will be printed twice. The key takeaway is that even though the child process was created locally in the function, it still inherits the main and other properties.

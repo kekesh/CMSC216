@@ -11,12 +11,13 @@ caption=Linked List Node}
 \end{center}
 
 
-Note that the structure tag inside of the typedef is necessary here since we have a self-reference inside our definition of a node.
+Note that the structure tag inside of the typedef is necessary here since we have a self-reference inside our definition of a node. Since pointers have the same size, the compiler won't have an issue in determining the size of \verb!next!. However, this wouldn't be possible if \verb!node! weren't a pointer.
 
-In order to represent a Linked List, we declare a pointer to the head by typing something like \verb!Node *head!. The pointer allows us to modify the Linked List inside of various functions. So, functions that modify the actual Linked List have function prototypes that take in a double pointer Node type.  
+In order to represent a Linked List, we declare a pointer to the head by typing something like \verb!Node *head!. The pointer allows us to modify the Linked List inside of various functions. So, functions that modify the actual Linked List have function prototypes that take in a double pointer Node type. 
 
 
-For instance, a function which instantiates the Linked List might have header \verb!void create_list(Node **head)!, and its body would simply be \verb!*head = NULL!. 
+For instance, a function which instantiates the Linked List might have header \verb!void create_list(Node **head)!, and its body would simply be \verb!*head = NULL!. In a similar manner, we'd need to pass in a double pointer to a node in order to add an element to the list (pretty much, we need a double pointer whenever we're modifying the list). 
+
 
 
 
@@ -45,6 +46,19 @@ There are two noteworthy types of Linked Lists traversal: \begin{itemize}
     This traversal allows us to add a node before or after any element. 
 \end{itemize}
 
+Here's an example of an \verb!insert()! function which maintains a sorted ordering in a Linked List:
+
+
+
+\lstset{
+caption=Linked List Insertion}
+\begin{center}
+\lstinputlisting[language=c]{june24/insertLL.c}\label{Linked List Insertion}
+\end{center}
+
+Note that it would be incorrect to pass just a single pointer to \verb!head! since the Linked List won't get modified.
+
+
 
 When we construct a Linked List, we will want to add nodes one by one. Creating a node requires three key steps: \begin{enumerate}
     \item Allocate memory for the node.
@@ -52,6 +66,20 @@ When we construct a Linked List, we will want to add nodes one by one. Creating 
     \item Insert the node into the list.
 \end{enumerate}
 
-When we create a node, we write something like \verb!struct node *new_node! followed by the command \verb!new_node = malloc(sizeof(struct node)))!. Note that something like \verb!new_node = malloc(sizeof(new_node))! would be incorrect as \verb!new_node! is a pointer variable (this command would allocate $8$ bytes rather than the actual amount of space needed). 
+When we create a node, we write something like \verb!struct node *new_node! followed by the command \verb!new_node = malloc(sizeof(struct node)))!. Note that something like \verb!new_node = malloc(sizeof(new_node))! would be incorrect as \verb!new_node! is a pointer variable (this command would allocate $8$ bytes rather than the actual amount of space needed). To change the data of a node, we use the arrow operator by doing something like \verb!new_node->data = 5!. 
 
-To change the data of a node, we can use the arrow operator by doing something like \verb!new_node->data = 5!. 
+
+Something important to keep in mind is that, in our model, \verb!head! itself is not a node. It's simply a pointer to the first node in our Linked List.
+
+
+Deletion from a Linked List involves calling \verb!free()! on the deleted node. Here is an implementation of the \verb!delete()! method:
+
+
+\lstset{
+caption=Linked List Deletion}
+\begin{center}
+\lstinputlisting[language=c]{june24/deleteLL.c}\label{Linked List Deletion}
+\end{center}
+
+
+

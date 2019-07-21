@@ -1,0 +1,131 @@
+\section{Friday, July 12, 2019}
+
+Last class, we started process control. Something important to keep in mind is that kernel can only hold a finite number of processes.
+
+What happens if we try to exhaust the number of processes permitted? Consider the following code:
+
+\lstset{
+caption=Fork Bomb
+}
+\begin{center}
+\lstinputlisting[language=c]{july12/july1201.c}
+\end{center}
+
+The above code segment tries to repeatedly spawn new processes. This is known as a \vocab{fork bomb}, and it exhausts all the possible space in a process table. An insecure system might crash, but most systems have something in-place to identify and stop these attacks\footnote{A fork bomb is a form of denial-of-service attack}.
+
+
+\subsection{Reaping Child Processes}
+After a child process finishes executing, we reap it in order to remove its details from the process table. Until the terminated process is reaped, we say that the process is a \vocab{zombie process}. 
+
+We can release zombie processes with the \verb!wait()! or \verb!waitpid()! system calls. What do they do? Once the program encounters a \verb!wait()! call, the program will wait until the child finishes until completion. Thus, the parent process will be blocked until the child continues. 
+
+
+Consider the following example, which illustrates the \verb!wait()! system call:
+
+\lstset{
+caption=Wait Example
+}
+\begin{center}
+\lstinputlisting[language=c]{july12/july1202.c}
+\end{center}
+
+As we've seen before, we're forking the program at the start. Then, if we're the parent process, we'll set \verb!returned_value! to \verb!wait(NULL)!. What does this do? \verb!wait()! does two things: (1) it reaps the child once it has finished executing, and (2) it blocks the parent from executing until the child has finished. 
+
+
+So now our program execute the child's code. The child's code calls \verb!sleep(4)! to wait for four seconds. Finally, it prints information about its own process as well as its parent process. 
+
+
+After the child finishes executing,  \verb!wait(NULL)! will reap the child process, and the parent process will continue its own execution.
+
+
+Some other things to note: \begin{itemize}
+    \item We're passing \verb!NULL! into our \verb!wait()! call -- why?  \verb!wait()! can be used to return information about what happened to the child process (i.e. a seg fault). If we just want to reap after the child process finishes, we pass in \verb!NULL!.
+    \item Will the order of the printed statements ever change? No -- the child's code will execute first, followed by the parent's code.
+    \item Why didn't we call \verb!wait()! in our previous examples? We should have. Our previous examples didn't reap created child processes.
+    \item What happens if a process doesn't reap a child? Formally, we call such a process an \vocab{orphan}, and the \verb!init! process will take care of it (created by the shell). Note that \verb!init! will only intervene when the process completes, so this isn't helpful in large programs.
+\end{itemize}
+
+
+Why is reaping important? Our program would eventually crash without it: the process table will get filled up if we create several processes without making space for more.
+
+
+The system call \verb!wait()! has function header \verb!pid_t wait(int *status)!. It returns $-1$ once everything has been reaped. Otherwise, it returns the PID of the child that is being reaped. What if we don't know how many children there are? We can just perform a while loop, and wait until \verb!wait()! returns $-1$.
+
+The \verb!status! parameter that \verb!wait()! takes in acts as an out-parameter. We can then use various pre-defined macros to see what took place.
+
+
+The following example demonstrates how the out-parameter can be used:
+
+
+\lstset{
+caption=Wait Status
+}
+\begin{center}
+\lstinputlisting[language=c]{july12/july1203.c}
+\end{center}
+
+Here, we're doing almost the same thing we did before. We fork the process, and the wait call on Line $39$ waits for the child process to finish to execution, while using \verb!status! as an out-parameter. 
+
+The child process requests an integer and does some sort of processing, some of which create errors (for example, entering $1$ leads to a segmentation fault). Subsequently, we return to the parent code, and we use the \verb!WIFEEXITED! macro, which tells us whether or not the child program has terminated. If it has terminated, we'll check whether the return value was $0$ with the \verb!WEXITSTATUS! macro. If the program doesn't finish to completion, we can check whether a segmentation fault occurred by using the \verb!WTERMSIG! status. 
+
+If the out-parameter \verb!status! equals zero by a \verb!wait()! call, that means the program finished as expected. 
+
+\subsection{Environmental Variables}
+
+\vocab{Environmental variables} and \vocab{shell variables} are are dynamically-named values that customize environments. For example, one thing that we can do is change our prompt. Typing something like, \verb!set prompt = "Hi: "! would make Grace prompt \verb!Hi: ! prior to each command (which constrasts from the default directory prompt).
+
+
+From a C program, we can find the value associated with an environment variable using the \verb!getenv! function. This function has header \verb!char *getenv(const char *name)!. For instance, \verb!loc = getenv("HOME")! would store the path to our home directory in \verb!loc!. The parameter \verb!name! needs to be an environmental variable. 
+
+Why would we need the \verb!getenv()! function? Say we're implementing the \verb!cd! function in a shell. If we type in \verb!cd! by itself, we're supposed to move to the home directory. How are we supposed to know where that is? By using \verb!getenv("HOME")!. Now, continuing with our implementation of \verb!cd!, how would we change what the program considers to be the home directory? We use a new function: \verb!chdir()!.
+
+
+\verb!chdir()!, short for ``change directory," has header \verb!int chdir(const char *path)!. This function returns $-1$ upon failure. So, if we wanted to perform the Unix command \verb!cd ~/temp!, we could equivalently execute \verb!chdir(~/temp)! in C. 
+
+Somewhat surprisingly, reproducing the \verb!cd! command in a shell doesn't require any forking. The \verb!exit! command doesn't require any forking either.
+
+\subsection{Nested Processes}
+
+So far, we've seen how to produce a child process of a parent process with \verb!fork()!. However, we've only seen examples in which the child process is executing code from the same file as the parent process. We can do this with the \verb!exelc()! or \verb!exelcp()!  function.
+
+
+Suppose we have the following \verb!evens.c! program:
+
+\lstset{
+caption=Evens
+}
+\begin{center}
+\lstinputlisting[language=c]{july12/july1204.c}
+\end{center}
+
+This program prints all even numbers up to whatever integer the user provides as a command-line argument (or up to $100$ if no argument is provided).
+
+Now, consider the following driver program:
+
+\lstset{
+caption=Exec Evens
+}
+\begin{center}
+\lstinputlisting[language=c]{july12/july1205.c}
+\end{center}
+
+Pretty much, the parent process just forks itself, and it waits for the child process to finish. Now, what's happening with the child process? We execute \verb!execlp("./evens", "evens", NULL)!, which loads the program \verb!evens.c!. Something important to know is that when we load in a program, the entire process ``becomes" the program  we loaded in. Thus, the print statement on Line $27$ is never printed (as it is not in the \verb!evens.c! program). When we execute \verb!exelcp!, the stack and heap are all cleared. The only thing that is retained is the set of files that were already opened by the original process.
+
+If the program doesn't exist, we'll exit with the error code \verb!EX_OSERR!. This error code never gets executed if the \verb!exelcp! is successful.
+
+
+
+% For the exercise, we need to build an array of commands so that we can only execute a limited set of commands. So we'll build an array of strings, and we'll use execvp. 
+
+
+With fork, exec, and waiting, we've got everything we need to build our own shell. There are two types of commands we need to handle: \begin{itemize}
+    \item Unix commands: These don't require forking, like \verb!ls!, \verb!cat!, and \verb!pwd!.
+    \item Shell commands: These are built-in to a shell; they typically involve forking. This includes \verb!cd!, \verb!set!, and \verb!setenv!.
+\end{itemize}
+
+The ``main loop" used to implement a simple shell is as follows: \begin{enumerate}
+    \item Read in a command line.
+    \item Parse the command line.
+    \item If it's a shell command, process it directly.
+    \item If it's a Unix command, fork, make the parent wait, and make the child execute the command. 
+\end{enumerate} 
