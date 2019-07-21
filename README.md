@@ -4,4 +4,4 @@ Since these notes are typed up during lecture, there are probably at least a few
 
 
 - Most of the code examples in the PDF were provided as lecture examples (I did not write them).
-- LaTeX style file (evan.sty) created by Evan Chen.
+- LaTeX style file (evan.sty) created by Evan Chen. There are only a few modifications I made to it.
