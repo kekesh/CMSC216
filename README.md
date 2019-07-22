@@ -7,4 +7,4 @@ Acknowledgements:
 
 - Most of the code examples in the PDF were provided by the professor as lecture examples (I wrote very little of the code in the PDF).
 - LaTeX style file (evan.sty) created by Evan Chen (https://github.com/vEnhance)
-- AVRASM style file (lstlang.sty) created by Nils Michelsen
+- AVR Assembly style file (lstlang.sty) created by Nils Michelsen
