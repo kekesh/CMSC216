@@ -1,0 +1,36 @@
+\section{The Make Utility}
+The Make Utility allow us to simplify the process of compiling code. When we increase the size of our software, we'll likely have several files we need to deal with. It would be pretty inefficient to compile \textit{all} of our files for a small change in a \textit{single} file.  So, this is where our utility come into play: they let us keep track of what's been modified and what needs to be re-compiled.
+
+Suppose we have a program called \verb!puzzles.c!, and we want to run a public test, named \verb!public01.c!. Typically, we'd execute \verb!gcc puzzles.c public01.c! and run the \verb!a.out! file produced. But, it turns out that we could have compiled these files separately with the \verb!-c! flag (which is used to create the \verb!.o! object file). That is, we could've run \verb!gcc -o puzzles.c! and \verb!gcc -o public01.c! separately to produce the \verb!puzzles.o! and \verb!public01.o! object files. The key takeaway here is that we can compile \verb!.c! files individually, even if they don't have a main (However, at least one file needs a main). 
+
+So, what are the advantages to being able to compile files individually? If we're only modifying one file, we'll only need to re-compile that one file. However, we will \textit{always} need to re-link the object files.
+
+
+Now what? Now, we need to link these object files in order to create our executable. We can do this by typing \verb!gcc -o public01 public01.o puzzles.o!, which will produce an executable called \verb!public01! from the two object files we have. 
+
+
+The make utility uses something called a \vocab{Makefile}, which we can modify with any text editor. The Makefile provides a set of rules that identifies what needs to be compiled, A good way to understand how a Makefile can help us is through the following example:
+
+
+Suppose we've got a driver file called \verb!publicX.c!, which makes use of some of the functions defined in \verb!puzzles.c!. Now, there's also a \verb!puzzles.h! file, which contains the headers for the functions in the \verb!puzzles.c! fie. Both \verb!publicX.c! and \verb!puzzles.c! include the \verb!puzzles.h! file. 
+
+Before we create our Makefile, we need to understand our ``tree" of dependencies. There are some basic dependency rules we need to understand: \begin{enumerate}
+    \item Executables depend on all of the object files that could compose the program.
+    \item Executables are made by linking object files.
+    \item Object files depend on their respective source files (\verb!x.o! depends on \verb!x.c!) and any header files included in the source files.
+    \item Object files are created by compiling \verb!.c! files with the \verb!-c! flag. 
+\end{enumerate}
+
+
+Now, in our Makefile, we list compilation rules in pairs of two lines. These are referred to as \vocab{rules}. Each rule has a \vocab{target} (a file name followed by a colon). After the colon comes a list of that file's dependencies. On the subsequent line, a command is provided, which specifies how to compile the program. The lines containing the commands must begin with a tab character.
+
+In our example, we'd have the following Makefile:
+
+\lstset{
+caption=Makefile 1
+}
+\begin{center}
+\lstinputlisting[language=c]{appendix/make1}\label{pointers:0601}
+\end{center}
+
+This Makefile specifies, for example, that if \verb!publicX.c! is modified, then \verb!publicX.o! will need to be re-linked. It's important to remember that the second line of a rule \textbf{must} begin with a tab character. 

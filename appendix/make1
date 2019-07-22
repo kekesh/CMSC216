@@ -1,0 +1,8 @@
+publicX: publicX.o puzzles.o
+    gcc -o publixX publicX.o puzzles.o
+    
+publicX.o: publicX.c puzzles.h
+    gcc -c publicX.c
+
+puzzles.o: puzzles.c puzzles.h
+    gcc -c puzzles.c
