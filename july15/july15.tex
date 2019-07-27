@@ -2,5 +2,137 @@
 Midterm II next week is on dynamic memory allocation, Linked Lists, and Makefiles. The exam won't cover Assembly or Process Controls.
 
 
+Recall from last week that we can categorize commands in shell programs into two categories: those that require forking and those that don't. Typically, when we aren't forking, we're executing Unix commands that have already been written for us (so we don't need to actually program what the command should do -- that's already been done for us).
 
-The \verb!waitpid()! system call allows us to 
+\subsection{Hiding Processes}
+In Unix, we can execute the \verb!ps! command (short for ``process status''), which will display a list of our active processes. Two useful flags for this command are \verb!-f!, which provides us with a ``full-format listing" (it provides some additional details) as well as \verb!-u!, which displays the processes associated with our user. Finally, the \verb!-e! flag shows all active processes for every user (so if you run \verb!ps -ef! on Grace, you can see what other users are doing).  The processes we create in C programs end up getting listed in here. 
+
+But what if we want our process to hide what it's doing? We can create an alias for our process with the second argument of the \verb!exelcp! function. In last week's example, we executed \verb!exelcp("./evens", "evens", NULL)!, so this process would have been displayed with the alias ``evens." This can be changed to whatever we want.
+
+\subsection{The waitpid() System Call}
+Nelson says \verb!waitpid()! is important to know for the final exam.
+
+Recall that last week, we executed \verb!wait(NULL)! to wait until a parent's child finished execution. The \verb!wait()! command suspends execution of the calling process until \textit{any} one of its children terminates. This can be problematic. To see why this can be a problem, suppose we're executing a parent process with two children processes. Call the two children processes Process A and Process B. If we perform a simple \verb!wait(NULL)! call, our parent process will continue executing as soon as either Process A or Process B finish execution. Now, what if the parent process is dependent on some task performed by Process B? We'd want to wait for Process B to finish executing, but a simple \verb!wait(NULL)!  call might cause the parent process to move on with only Process A completed.
+
+
+The \verb!waitpid()! function has header \verb!pid_t waitpid(pid_t pid, int *status, int options)!, and it solves this problem. This function is used to suspend the execution of the calling process until a child specified by the \verb!pid! argument has finished executing. In the previously mentioned problem, we'd be able to fix our issue by entering the PID of Process A into a \verb!waitpid()! call. The \verb!status! parameter acts as an out-parameter, and the \verb!options! parameter is a special number (defined as a macro), or it can alternatively just be $0$.
+
+
+Instead of inserting the PID into the first parameter of \verb!waitpid()! function, if we instead input $-1$, we'll instead reap any process that has finished. This is a special case, and it allows us to recreate the \verb!wait()! function. More specifically, \verb!waitpid(-1, &status, 0)! would perform the exact same thing as \verb!wait(&status)!. 
+
+Here is an example which uses the \verb!waitpid()! function:
+
+\lstset{caption=Deterministic Reaping}
+\begin{center}
+\lstinputlisting[language=c]{july15/july1501.c}
+\end{center}
+
+
+On Line $17$, we declare an array of PIDs so that we can keep track of the PIDs of every child we create. This array is filled up in the loop between Lines $21$ and $25$ by forking several times. From here, if we're a child, we'll print a statement, we'll sleep for a random amount of time, and we'll exit. 
+
+While these processes are executing, our parent process will be waiting on Line $37$ to reap these processes. Note that our \verb!waitpid! call allows us to specify the PID of the process we're reaping. In this case, we're reaping the processes in the order in which they are stored in the array. Since reaping a process acts like a ``block," if every process except for the first one has finished, our program will be run inefficiently (we'll be stuck waiting for the first process to finish executing, which won't necessarily be first). Thus, there are pros and cons to this approach.
+
+The \verb!while! conditional on Line $37$ stores the destroyed child process's PID into the variable \verb!child_pid!. We then check whether this PID is positive (indicating success), and if it is, we'll check whether the child was reaped successfully or not. Finally, when there aren't any more processes left to reap, the macro \verb!ECHILD! is returned by \verb!waitpid!, and we make sure this is what was returned between Lines $46$ and $51$. 
+
+As a side-note, note that this code segment performs all of the forks followed by all of the reaps (this is in contrast to performing one fork, one reap, another fork, another reap, etc). In fact, it is more efficient to do it this way since it allows our computer to execute all of the processes in the most efficient manner.
+
+In the above code segment, we reaped processes in the order in which they were created. That is, the reaping process was \vocab{deterministic} in the sense that we knew what to expect of the order of the processes being reaped. Next, we'll consider a reaping process that is \vocab{probabilistic} in the sense that there will be some randomization.
+
+
+Here's the corresponding code segment:
+
+\lstset{caption=Probablistic Reaping} 
+\begin{center}
+\lstinputlisting[language=c]{july15/july1502.c}
+\end{center}
+
+What's happening here? In the beginning of the code segment, we're just creating $12$  processes, and we're printing the PIDs of the children. Meanwhile, on Line $54$, we're reaping the children. However, note that we're now using $-1$ as the first parameter of our \verb!waitpid! calls. So, we're reaping \textit{any} process that finishes until we're out of processes. Unlike the previous example, this example doesn't enforce any ordering in the reaping process. If we run the program many times, the order in which our processes are reaped will change.
+
+ % Go back to this part of the lecture while studying for exam. Nelson said something here is not needed for projects/exercise, so I zoned out :-(
+ 
+\subsection{Unix I/O}
+ 
+ So far, we've covered Standard I/O, but there's also Unix I/O. What's are the differences? \begin{itemize}
+     \item Standard I/O is built using Unix I/O (so we're going backwards).
+     \item Standard I/O is generally buffered, whereas Unix I/O doesn't feature buffers.
+     \item A file in Unix is just a sequence of bytes, and all I/O devices (e.g. keyboards, screens, and disks) are modeled as files in Unix.
+ \end{itemize} 
+ 
+It seems like Unix I/O is older, worse, and harder to use than Standard I/O. So why are we using it? Because Unix I/O permits us permits us to not only read and write from files but also to send data between processes
+
+Before we get started with Unix I/O, we need to learn about file management in Unix.
+
+Each process has a \vocab{file descriptor table} which stores the set of files that the given process has open. For example, when we use \verb!fopen()!, an entry will be added to the file descriptor table. By default, each process has three files listed in the file descriptor table: standard input, standard output, and standard error. 
+
+Essentially, we can treat the file descriptor table as an array, and each entry in the table is a file. A file can be opened more than once; if this is the case, there will be more than one entry with the same file.
+
+So what does each entry in the file descriptor table store? First, there's some general information, like how far we are into the file (opening a file a second time would reset this entry). Information about a file related to permissions, size, and type are stored in a table called the \vocab{inode table}. 
+
+
+There's also an important piece of information, known as the \vocab{reference count}, which tells us how many processes are associated with an entry.   
+
+
+When we call the \verb!fork()! command, the entire file descriptor table is copied over. If we then use the child process to execute a command, the address space gets modified; however, the file descriptor table does not get modified. What does this mean for us? When we perform \verb!exec! calls, the file descriptor table is preserved. 
+
+
+\subsection{File Operations}
+There are four primary system calls associated with Unix I/O. Their headers are listed below: \begin{enumerate}
+    \item \verb!int open(const char *filename, int flags)! or \verb!int open(const char *filename, int flags, mode_t mode)!.
+    \item \verb!ssize_t read(int fd, void *buffer_size, size_tn!.
+    \item \verb!ssize_t write(int fd, const void *buffer_size, size_t n)!. 
+    \item \verb!int close(int fd)!.
+\end{enumerate} 
+
+A process can request access to a file using the \verb!open()! system call. Upon success, the kernel returns a file descriptor (an index in the file descriptor table). We can then modify the file using the \verb!read()! and \verb!write()! functions. Once we're finished, we can use the \verb!close()! function to close the file.
+
+
+Here's an example:
+
+
+\lstset{caption=Unix I/O Example 1}
+\begin{center}
+\lstinputlisting[language=c]{july15/july1503.c}
+\end{center}
+
+
+First off, note that we use \verb!open()! to open the file \verb!message.txt! with various options that don't concern us right now. After the \verb!open()! fuction is called on Line $16$, the variable \verb!fd! will be either $-1$ (upon failure) or $3$ (upon success; this is the index directly after standard input, standard ouput, and standard error). 
+
+If opening the file succeeds, we'll set the string \verb!msg! to ``Hi there!," and we'll use \verb!write()! to write to the file. Note the parameters here. The first parameter is the file descriptor, the second parameter is a pointer to the data, and the last parameter is the number of bytes we're requesting to write. Note that we don't actually need to have space for our null character---requiring space for a null character is a C construct, and Unix does not follow the same constructs.
+
+
+Finally, we close the file with the \verb!close()! call to indicate we're done processing our file. The \verb!close()! function returns $-1$ upon failure, so we need to make sure that worked as well. 
+
+
+Okay, so this is an example of writing to files. What about reading to files? This is captured below: 
+
+
+\lstset{caption=Unix I/O Example 2}
+\begin{center}
+\lstinputlisting[language=c]{july15/july1504.c}
+\end{center}
+
+Like before, we'll open the file and set the file descriptor to \verb!fd!. The option specified in the last parameter of \verb!open()! specifies that we're only allowed to read the file. 
+
+Upon success, we'll use the fact that \verb!read()! returns the number of bytes read, and we'll store that return value into \verb!bytes_read! (we just use this as a sanity check to make sure \verb!bytes_read == LENGTH! holds). Again, taking note of the parameters of \verb!read!(), we see that the first parameter is the file descriptor, the second parameter is a pointer to where we want to store the data, and the third parameter indicates the length of what we want to read.
+
+Subsequently, we check to make sure that we've read in the desired number of bytes. If so, we'll print what we read (note that we use the \verb!%c! format specifier rather than the \verb!%s! format specifier since there's no null character), and we'll close the file. 
+
+
+We can use these Unix I/O commands to read standard input and standard output. How? \begin{itemize}
+    \item Use $0$ as our file descriptor for standard input.
+    \item Use $1$ as our file descriptor for standard output.
+    \item Use $2$ as our file descriptor for standard error.
+\end{itemize}
+
+This is demonstrated below:
+
+
+\lstset{caption=Unix I/O Example 3}
+\begin{center}
+\lstinputlisting[language=c]{july15/july1505.c}
+\end{center}
+
+What are we doing? We read a string of up to length $5$ from standard input, we write whatever we inputted to standard output, and we also print ``Bye."
+
+Although using $0$ and $1$ works for our file descriptors, we conventionally use the macros \verb!STDIN_FILENO! and \verb!STDOUT_FILENO!.
+
