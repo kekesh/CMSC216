@@ -1,0 +1,62 @@
+\section{Friday, July 19, 2019}
+
+\subsection{More on Pipes}
+
+Recall that the goal of piping is to exchange data between two processes.  This is particularly helpful when we're exchanging data between a parent process and a child process. In particular, we can create a pipe and fork the process so that the child gets the pipe as well. A pipe is completely determined by two file descriptors: a read end, and a write end. When we call the \verb!pipe()! function in C, we pass in an array whose first entry is the read end and second entry is the write end.
+
+Below is an illustrative example of how piping works:
+
+\lstset{caption=Piping Example 1}
+\begin{center}
+\lstinputlisting[language=c]{july19/july1901.c}
+\end{center}
+
+In this program, we're forking the parent process, and we're sending a file name to the child. Subsequently, the child uses this file name as the destination for its processing (perfect squares up to $16$). The \verb!pipe()! call on Line $25$ is what initializes our pipe. 
+
+In the parent code, note that we're closing the read end of the pipe. The reason why this is done is because it's sending data to the child (thus, the read end is not necessary). Subsequently, we prompt the user for a file name, and we send it over to the child by using the pipe. Once we're done sending it over with the \verb!write()! call, we'll close the write end of the pipe, and we'll wait for the child to reap.
+
+From there, the child's code executes. The child will be reading data, so it doesn't have any use for the write end of the pipe. Thus, the write end of the pipe is closed. Subsequently, it reads from the read end of the pipe and closes it. It can now process with the file name provided.
+
+
+Here's an example that combines \verb!dup2! and \verb!pipe! calls. 
+
+\lstset{caption=Piping Example 2}
+\begin{center}
+\lstinputlisting[language=c]{july19/july1902.c}
+\end{center}
+
+% If our shell project hangs, make sure we're closing all the appropriate ends.
+
+This is similar to the previous example. Pretty much, we're reading a number into \verb!value!, we're creating a pipe, and we're forking. The parent closes the read end of the pipe (it has nothing to read!), writes the inputted value to the write end of the pipe (for the child), and closes the write end of the pipe. It then waits for the child to finish execution.
+
+The child closes the write end of the pipe (it has nothing to write), and it maps its standard input to read from the read end from the pipe. Consequently, it closes the read end of the pipe (this is allowed because we've already mapped our standard input), and the child executes the program ``table." Now, if the program ``table" takes in a value from standard input, it will instead read the value that was put into the pipe.
+
+
+At this point, we should be able to implement an EngToFre program that uses piping with the outputs of EngToSpa and SpaToFre (create a pipe and two children; the first child represents EngToSpa, and the second child represents SpaToFre). 
+
+
+\subsection{Introduction to Concurrency}
+\vocab{Concurrency} is the ability to use different parts of a program in an out-of-order sequence without affecting the final desired result. A \vocab{thread} is a lightweight process that specifies an execution sequence in a process. We've already briefly introduced threads---recall that the minimal representation of a thread is a stack and a program counter. By quickly switching between threads, we can make it seem as if different execution sequences are executing at the same time. An example of how threads might be used is a GUI displaying clocks in different timezones.  
+
+If we have multiple threads, there are some things that they share. In particular, threads share heap memory, global/static memory, open files, shared libraries, and virtual addresses.
+
+How do we use threads in C? With the \verb!pthread.h! library. 
+
+This library includes a data type called \verb!pthread_t!, which allows us to represent thread IDs. There's also a built-in \verb!pthread_create! function which is used to initialize (but not start) a thread's process. Finally, there's a \verb!pthread_join! function which allows the thread to begin executing.
+
+Here is a basic example:
+
+
+\lstset{caption=Threads Example 1}
+\begin{center}
+\lstinputlisting[language=c]{july19/july1903.c}
+\end{center}
+
+In the above example, we've declared a thread called \verb!tid!. This is initialized with the \verb!pthread_create! function, where the thread ID is passed in as a null parameter. In this class, we'll always have the second argument of \verb!pthread_create! equal to \verb!NULL! (the second argument allows us to use custom initializations). Subsequently, the third parameter of \verb!pthread_create! specifies what the task the thread should be executing (here, it's the function \verb!print_point!), and it is followed by any parameters that the function might need. 
+
+
+The function prototype of the task that a thread is performing will always return a void pointer, and it will always take in a void pointer. This function header cannot change.
+
+In our program, if this initialization succeeds, we'll use the \verb!pthread_join()! function (again, in our class, the second parameter will always be \verb!NULL!). This function will tell the thread to finish executing. Finally, we'll print the \verb!printf! statement on Line $27$. \\
+
+We'll continue with concurrency next class.

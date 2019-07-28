@@ -4,7 +4,7 @@ Recall that each entry in the file descriptor table represents a file. Each entr
 If we view the reference count of a single process, it'll just be one. If we fork the process, the address space and file descriptor table are duplicated; however, the reference count will be increased by one. Moreover, if the child were to perform an \verb!exec! call, the address space ``becomes'' the address space of the new program (it gets overriden), but the file descriptor table will stay the same.
 
 
-\subsection{I/O Redirection}
+\subsection{Unix I/O Redirection}
 The \verb!dup2()! function allows us to perform input/output redirection. 
 
 Suppose we have opened a file \verb!data.txt!, and we want to redirect its contents to standard input. We'd first open the file so that \verb!data.txt! would be stored in the third index of the file descriptor table (after standard input, standard output, and standard error). Now, we can call the \verb!dup2! function, which has function header \verb!int dup2(int oldfd, int newfd)!. For instance, if we were to write \verb!dup2(3, STDIN_FILENO)!, we'd be redirecting the contents of \verb!data.txt! to standard input. Subsequently, if we call \verb!read(STDIN_FILENO, buffer, 8)!, we'd be reading the first eight characters in standard input, which happens to be what we redirected from \verb!data.txt!. 
@@ -52,7 +52,8 @@ First, we're opening a file called \verb!results.txt!, and we're redirecting sta
 Finally, we call \verb!print_powers!, which uses \verb!printf! to print the first \verb!limit! perfect squares. Since \verb!printf! defaults to printing to standard output, we'll actually be printing to the file that we opened.
 
 
-\subsection{Pipes}
+\subsection{Introduction to Pipes}
+Most of our discussion on pipes will be done next class, but we'll briefly introduce them today.
 
 A \vocab{pipe} is used to combine two or more commands and use the output of one command to act as the input to another command. Piping takes place in a left-to-right manner in Unix by separating targets with the vertical bar \verb!|!. Less formally, a pipe can be viewed as an area in which information can be exchanged.
 
