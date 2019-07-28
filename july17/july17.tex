@@ -1,1 +1,66 @@
 \section{Wednesday, July 17, 2019}
+Recall that each entry in the file descriptor table represents a file. Each entry has some general information, like how far we are in the file, as well as the reference count (represents the number of processes associated with the entry), and the inode, which contains some metadata about the file.
+
+If we view the reference count of a single process, it'll just be one. If we fork the process, the address space and file descriptor table are duplicated; however, the reference count will be increased by one. Moreover, if the child were to perform an \verb!exec! call, the address space ``becomes'' the address space of the new program (it gets overriden), but the file descriptor table will stay the same.
+
+
+\subsection{I/O Redirection}
+The \verb!dup2()! function allows us to perform input/output redirection. 
+
+Suppose we have opened a file \verb!data.txt!, and we want to redirect its contents to standard input. We'd first open the file so that \verb!data.txt! would be stored in the third index of the file descriptor table (after standard input, standard output, and standard error). Now, we can call the \verb!dup2! function, which has function header \verb!int dup2(int oldfd, int newfd)!. For instance, if we were to write \verb!dup2(3, STDIN_FILENO)!, we'd be redirecting the contents of \verb!data.txt! to standard input. Subsequently, if we call \verb!read(STDIN_FILENO, buffer, 8)!, we'd be reading the first eight characters in standard input, which happens to be what we redirected from \verb!data.txt!. 
+
+
+In a similar manner, if we perform output redirection on standard output to a file, printing to standard output would actually print to the file we being redirected to.
+
+Here is an example:
+
+
+\lstset{caption=Dup2 Example 1}
+\begin{center}
+\lstinputlisting[language=c]{july17/july1701.c}
+\end{center}
+
+What is this program doing? If we run it with command line arguments, we'll open the specified file and redirect its contents to standard input. We'll then read from standard input and print its contents to standard output.
+
+Suppose we execute the program without any command line arguments. If we type in ``Maryland,'' the program will simply print ``Maryland'' to standard output (due to Lines $36$ and $37$ in the program above). 
+
+Now suppose we specify the file \verb!data.txt!, which has contents ``Hello." The \verb!dup2! function on Line $30$ will redirect standard input to map to the contents of our file. Thus, the read statement on Line $36$ will read from \verb!data.txt!, and we'll be writing the contents of \verb!data.txt! to standard output (so the output is ``Hello."). 
+
+
+
+Here's another example:
+
+\lstset{caption=Dup2 Example 1}
+\begin{center}
+\lstinputlisting[language=c]{july17/july1702.c}
+\end{center}
+
+In this example, we can optionally provide command line arguments for input and output redirection. If we provide one file name, we'll direct its contents to standard input. If a second file is specified, we'll redirect its contents to standard output. Finally, we'll read whatever standard input is pointing to, and we'll write it to wherever standard output is pointing to.
+
+Also, note that we check whether the return value of \verb!dup2! is negative, which would indicate failure. 
+
+
+ Here is one last \verb!dup2! example:
+ 
+ \lstset{caption=Dup2 Example 3}
+\begin{center}
+\lstinputlisting[language=c]{july17/july1703.c}
+\end{center}
+
+First, we're opening a file called \verb!results.txt!, and we're redirecting standard output to point to the contents of this file, and we release the file descriptor \verb!fd! by closing it. 
+
+Finally, we call \verb!print_powers!, which uses \verb!printf! to print the first \verb!limit! perfect squares. Since \verb!printf! defaults to printing to standard output, we'll actually be printing to the file that we opened.
+
+
+\subsection{Pipes}
+
+A \vocab{pipe} is used to combine two or more commands and use the output of one command to act as the input to another command. Piping takes place in a left-to-right manner in Unix by separating targets with the vertical bar \verb!|!. Less formally, a pipe can be viewed as an area in which information can be exchanged.
+
+As a basic example, suppose we have a program \verb!EngToSpa! and \verb!SpaToFre!, which are English-to-Spanish and Spanish-to-French translators. Now suppose we want to translate the word, ``dog" from English to French. Instead of writing a new English-to-French translator, we can just utilize what we already have with piping. Typing \verb!./EngToSpa | ./SpaToFre! in Unix and typing in ``dog" would produce our desired result (it would use the Spanish output and use it as the input for the second program).
+
+
+But, this is a little bit inconvenient for the user. If we've got a lot of languages, the user's going to need to keep on typing vertical bars to try and find a short path to a language when a direct path might not exist. The programmer can simplify the amount of work necessary on the user's end by piping inside of a C program.
+
+
+In C, there's a \verb!pipe()! function which takes in an integer array of size two. The first entry in the array needs to be the file descriptor for the read end of the pipe, whereas the second entry acts as the write end of the pipe. If a process tries to read before anything is written to the pipe, the process is suspended until something is written.
+
