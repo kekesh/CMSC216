@@ -52,7 +52,7 @@ Here is a basic example:
 \lstinputlisting[language=c]{july19/july1903.c}
 \end{center}
 
-In the above example, we've declared a thread called \verb!tid!. This is initialized with the \verb!pthread_create! function, where the thread ID is passed in as a null parameter. In this class, we'll always have the second argument of \verb!pthread_create! equal to \verb!NULL! (the second argument allows us to use custom initializations). Subsequently, the third parameter of \verb!pthread_create! specifies what the task the thread should be executing (here, it's the function \verb!print_point!), and it is followed by any parameters that the function might need. 
+In the above example, we've declared a thread called \verb!tid!. This is initialized with the \verb!pthread_create! function, where the thread ID is passed in as an out parameter. In this class, we'll always have the second argument of \verb!pthread_create! equal to \verb!NULL! (the second argument allows us to use custom initializations). Subsequently, the third parameter of \verb!pthread_create! specifies what the task the thread should be executing (here, it's the function \verb!print_point!), and it is followed by any parameters that the function might need. 
 
 
 The function prototype of the task that a thread is performing will always return a void pointer, and it will always take in a void pointer. This function header cannot change.

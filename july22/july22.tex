@@ -1,0 +1,109 @@
+\section{Monday, July 22, 2019}
+\subsection{Retrieving Values from Threads}
+
+Last time, we saw how we can initialize a thread and make it perform a task. But, what if the thread computes some important value and we want to retrieve it?
+
+Here is an example:
+
+\lstset{caption=Retrieving Values}
+\begin{center}
+\lstinputlisting[language=c]{july22/july2201.c}
+\end{center}
+
+
+Like we mentioned last class, the function that specifies the task that the thread will be performing will always have the same function header: it always takes in a void pointer, and it will always return a void pointer. 
+
+If the thread's function always takes in a pointer, how do we perform tasks that require more than one parameter? This is solved by declaring a pointer to a structure, where the structure contains all of the necessary fields. This is exactly what we've done in the above example.
+
+On Line $8$, we've defined a thread that will be used to perform the \verb!get_square! task. The \verb!pthread_create()! call on Line $15$ initializes \verb!tid!, and it also specifies the task that the thread will be computing. Moreover, as we mentioned last class, the second argument of the function will always be \verb!NULL!. Finally, the last parameter specifies the parameter of the function we're initializing the thread to.
+
+
+Now, the \verb!pthread_join()! function will tell the program to execute the task that the thread was assigned. If we want to keep the value that the function is returning, we need to allocate memory and return that value. Now, how do we retrieve the value? We pass an out-parameter when we're calling the \verb!pthread_join()! function (in this case, \verb!result_ptr! acts as our out-parameter). Thus, after Line $16$, \verb!result_ptr! will store the returned value. The caller is responsible for freeing the dynamically allocated memory.
+
+When we're creating multiple threads, it's good practice to create all of the threads at first and join them all afterwards (rather than creating one, joining it, creating another, joining it). Why? Because otherwise, we'd be executing our program sequentially, which doesn't actually use concurrency.
+
+Here is an example which uses more than one thread:
+
+\lstset{caption=Multiple Threads}
+\begin{center}
+\lstinputlisting[language=c]{july22/july2202.c}
+\end{center}
+
+In our main, we create \verb!THREAD_CT! threads, and we keep track of each of their IDs in our array \verb!tids!. The second loop between Lines $34$ and $37$ will print some details about the thread, and we'll finally terminate the program. 
+
+Note that when we're creating the threads, we use \verb!&id[i]! as the last parameter of \verb!pthreads_create()! rather than \verb!&i!. Why? Because if we were to use \verb!&i! as the parameter to \verb!print_stuff!, there would be a \vocab{data race}. Since \verb!i! is changing inside of the loop and multiple threads depend on this same variable, we'll have unexpected output. The solution is to make sure that each variable has its own in-parameter. \\[1em]
+
+
+\subsection{Locks, Mutexes, and Semaphores}
+
+Suppose we want to use multiple threads to compute one value (such as the maximum in an array). The variable that would store the array maximum would need to be ``shared" among all of the threads. That is, all of the threads should be able to modify the array with a new maximum it finds. However, it's important to make sure that only one thread accesses the shared variable at once --- otherwise, we might have a data race. In general, \textbf{when one thread is accessing common variable, no other thread should be accessing it.}
+
+
+Here's another example in which locks might be important. Consider the following code segment:
+
+
+
+\lstset{caption=Accessing Critical Section without Synchronization}
+\begin{center}
+\lstinputlisting[language=c]{july22/july2203.c}
+\end{center}
+
+This program creates two threads, each of which execute the function \verb!counter!. The function \verb!counter! increments the global variable \verb!count! ten million times. Finally, we print out the value of \verb!count!. While one might expect \verb!count! to have a value of $20,000,000$, it turns out that this is not the case. Each time we run the program, we should expect to get a quantity between $10,000,000$ and $20,000,000$. Like the array maximum problem described, this discrepancy is caused by a data race.
+
+
+How do we control the threads' access to a variable? With locks, mutexes, semaphores. First, we'll distinguish between the three:
+
+\begin{enumerate}
+\item A \vocab{lock} only permits one thread to access data that is locked. This lock is not shared with any other processes.
+\item A \vocab{mutex}\footnote{Short for mutual exclusion} is just like a lock; however, it can be shared by multiple processes.
+\item A \vocab{semaphore} is a same as a mutex; however, it permits a predefined number of threads to access the shared data space.
+\end{enumerate}
+
+Also, the data section that only one active thread should be accessing at once (in our example, this would be the \verb!count! variable) is formally known as the \vocab{critical section}. 
+
+How do we use these in C? Let's first look at the code segment that solves our \verb!count! issue:
+
+\lstset{caption=Accessing Critical Section with Synchronization}
+\begin{center}
+\lstinputlisting[language=c]{july22/july2204.c}
+\end{center}
+
+
+Here, we see that there's a data type called \verb!pthread_mutex_t!. This is used to declare mutexes (mutexes sounds strange -- maybe mutices? mutexi? mutii?). 
+
+How do we use this mutex? Whenever we're going to access the critical section, we'll need to acquire the lock by using the \verb!pthread_mutex_lock()! function. Once we're done accessing the critical section, we'll let go of the lock with the \verb!pthread_mutex_lock()! function. Both of these functions take in a pointer to a \verb!pthread_mutex_t! type (which makes sense -- the functions would need to modify this type to signal that the critical section shouldn't be accessed).
+
+When one thread has acquired the lock, no other thread can access the critical section. More specifically, suppose two threads are trying to modify \verb!count! at the same time. One thread will execute Line $14$ before the other (and thus acquire the lock). When the second thread gets to Line $14$, it'll realize that the lock has already been acquired. This thread will now be forced to wait until the first thread has finished accessing the critical section (which occurs after Line $16$ is executed). 
+
+
+The con of synchronizing our code with mutexes, locks, and semaphores is time efficiency. This code segment runs slower than the previous (incorrect) code segment. One reason why might be that one thread needs to wait for the other before it can perform its task.  
+
+
+\subsection{System and Unix Time}
+% Nelson says we won't to write code to compute various times on the final, but we should understand and be able to describe things about time.
+
+
+There are many different ways to measure time on a computer, a couple of which are described below: \begin{enumerate}
+    \item \vocab{Wall time} (also known as ``\vocab{elapsed real time}") is the actual time taken from the start of a computer program to the end. Internally, it's calculated by subtracting the ending time of a program by the starting time of a program.
+    \item \vocab{Process time} is the time your program was running without accounting for the time the program stopped for other programs or the time the program needed to wait for I/O.
+\end{enumerate}
+
+Process time can further be divided into two categories: \vocab{user time}, which represents the amount of time the operating system is running your code, and \vocab{kernel time}, which represents the time the operating system is running system code (i.e. when we're handling system calls, like \verb!fork()!).
+
+We can obtain measurements on how long a program takes to execute using the \verb!time! command in Unix. The general syntax for this command is \verb!time [executable]!. 
+
+As an example, consider the following code:
+
+\lstset{caption=Time Example}
+\begin{center}
+\lstinputlisting[language=c]{july22/july2205.c}
+\end{center}
+
+If we were to compile the file and place an executable with the name ``sleeper" in our directory, typing \verb!time sleeper! would produce a result similar to what follows below: \begin{center}
+\verb!1.844u 0.001s 0.06.85 ... ... ... [other information] ... ... ...! 
+\end{center}
+
+The first entry, \verb!1.844! denotes the user time in seconds. The second entry, \verb!0.001! denotes the kernel time in seconds. The third entry, \verb!0.06.85!, denotes the wall time in seconds. This output is kind of expected since we have a \verb!sleep()! call in our function, which does nothing for five seconds. 
+
+
+\subsection{Date and Time Functions}
