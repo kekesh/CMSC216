@@ -1,0 +1,19 @@
+\section{Monday, July 29, 2019}
+\subsection{Dynamically-loaded Libraries}
+Last class, we introduced two types of libraries: shared libraries and static (or archive) libraries. A \vocab{dynamically-loaded library} is a different way to use a shared library; however, it is NOT a new type of library.
+
+Functions in dynamically loaded libraries can be loaded into an application during runtime, not just at program startup\footnote{This is how browsers allow for skins, plug-ins, etc}. Dynamically loading a library requires more work for the programmer; however, it makes the program more convenient for the user. 
+
+It's important to remember that static libraries cannot be dynamically loaded. 
+
+If static libraries requires space in every executable AND cannot be dynamically loaded, why do we even use them? First, static libraries allow for a quicker startup of the program since we don't need to load the functions needed at runtime. Essentially, it permits us to ``pay" a price (in time) at compile time for a faster startup at runtime. 
+
+Nelson says that we should be able to name the two types of libraries and list their advantages/disadvantages for the final exam.
+
+\subsection{Optimization} 
+In machine code, not all instructions take the same amount of type. A classical example of this is dividing integers versus floating point numbers---dividing an integer quantity by a constant is significantly faster (by a factor between $5$ to $10$) than dividing a floating point number. There are other optimizations that the compiler automatically performs. It's helpful to understand what compilers can and can't do, as well as the time it takes on the hardware.
+
+First off, processors use \vocab{caching}, which is a method of keeping copies of recently accessed memory locations in fast storage. Consequently, future requests for that data are served up faster than is possible by accessing the data's primary storage location. Efficiency is maximized if the same cache items are used multiple times.
+
+Next, processors perform \vocab{pipelining}, which allow parts of multiple instructions to execute simultaneously. For example, the processor might start to decode one instruction while loading the next one from memory. Some superscalar processors can execute two or more instructions at once. Pipelining can further be optimized with \vocab{branch prediction}, which is a process by which the processor guesses which way a branch (e.g. a conditional statement) will go, ultimately allowing the pipeline to stay full. 
+
