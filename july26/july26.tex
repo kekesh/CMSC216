@@ -1,0 +1,59 @@
+\section{Friday, July 26, 2019}
+Today, we're wrapping up multithreading.
+
+\subsection{Thread Safety}
+Recall that when we have multiple threads, we need to make sure our code is \vocab{thread safe}. As we've already seen, two threads attempting to modify a shared variable can lead to data races. 
+
+Here's another example of a function that threads might use, which would be considered unsafe:
+
+\lstset{
+caption=Thread Unsafe Function
+}
+\begin{center}
+\lstinputlisting[language=c]{july26/july2601.c}
+\end{center}
+
+Why is this thread unsafe? Suppose two threads are using this same function. When the first thread calls the function with an integer, we'll store the string-equivalent of that integer into \verb!buffer!. The function returns a pointer to the buffer (note that this is actually fine since the \verb!buffer! variable is static). Now if a second thread calls this same function, it'll modify the same memory address, which means that the first thread and second threads would both be pointing to the second result. 
+
+How do we solve this issue? We can protect calls to this function with a binary semaphore and make deep copies before allowing other threads to access the function. Alternatively, we can use out-parameters to initialize the return value. 
+
+
+A function that can be interrupted and resumed at a later time without hampering its earlier course of action is said to be \vocab{reentrant}. There are some conditions that a function must satisfy to be reentrant, like not using any global or static data. Also, a reentrant function cannot call another non-reentrant function.
+
+
+Every reentrant function is thread safe; however, not every thread safe function is reentrant. As an example, the \verb!itoa! function could be modified to include locks. In that case, \verb!itoa! still wouldn't be reentrant (it has a static variable!), but it would be thread safe. 
+
+\subsection{Libraries}
+
+A \vocab{library} is a collection of object files that provide compiled functions to perform some related task. Libraries are linked into programs either prior to execution or during program execution.
+
+
+There are a few options that we have when we're sharing code: \begin{itemize}
+    \item We can give out the source code. This gives the client access to everything you wrote. The downside is that it needs to be recompiled and re-linked by every user, and it also exposes implementation details.
+    \item We can give out the object code. This won't require recompilation of the object code; however, it'll require re-linking of the application that'll be using it.
+\end{itemize}
+
+
+Surprisingly, giving out libraries is even easier than both of these options. Giving out libraries doesn't even require re-linking of the application using it. 
+
+Another benefit of using libraries is that they only include what is being used into the executable. For instance, if a library contains hundreds of functions, but we only use one, the library will only compile the ones that are being used. The linker has to search through an object file and find each function being used. However, this process can be sped up with indexing. 
+
+
+
+
+The \verb!nm! Unix command has general syntax \verb!nm [.o file]!, and it returns a list of functions and other symbols being used in the compiled \textit{object} code. This is helpful because it looks only at machine code rather than C code. 
+
+
+The primary types of libraries are summarized below:
+
+\begin{enumerate}
+    \item An \vocab{archive} library is linked into a program as a part of the linking phase of compilation. It requires space in each executable that uses them, and a benefit of using them is their ease of use. These types of libraries consist of only one \verb!.a! file (similar to a \verb!.zip! file), where everything is stored.
+    \item A \vocab{shared library} allows different executables to share the same library code, ultimately saving disk and memory space. Shared object files have the file extension \verb!.so!. These typically function more efficiently than archive libraries.They are linked either at program startup or during execution, and only one copy is needed for the entire system. Using command line, we can use the \verb!ldd! command, which has syntax \verb!ldd [executable file]!, to tell us which shared libraries an executable file depends on.
+\end{enumerate}
+
+
+The \verb!ln! command in Unix can be used with the flag \verb!-s! to to create symbolic links between two or more files. The general syntax is \verb!ln -s [file_name] [link_name]!. 
+
+What are links used for? Essentially, they're used to redirect one file to another piece of data that already exists. This can help us save space when we're copying files to other locations in memory. Say we have a file called \verb!file1.txt! that has the contents ``File 1." We can now create a new file called \verb!file2.txt!, and executing \verb!ln -s file1.txt file2.txt! will make File $2$ ``point'' to the contents of File $1$. Thus, if we were to execute \verb!cat file2.txt!, we'd see ``File 1" as output. 
+
+Symbolic linking can also be done with other types of files, including directories.
