@@ -10,10 +10,102 @@ If static libraries requires space in every executable AND cannot be dynamically
 
 Nelson says that we should be able to name the two types of libraries and list their advantages/disadvantages for the final exam.
 
-\subsection{Optimization} 
+\subsection{Introduction to Optimization} 
 In machine code, not all instructions take the same amount of type. A classical example of this is dividing integers versus floating point numbers---dividing an integer quantity by a constant is significantly faster (by a factor between $5$ to $10$) than dividing a floating point number. There are other optimizations that the compiler automatically performs. It's helpful to understand what compilers can and can't do, as well as the time it takes on the hardware.
 
-First off, processors use \vocab{caching}, which is a method of keeping copies of recently accessed memory locations in fast storage. Consequently, future requests for that data are served up faster than is possible by accessing the data's primary storage location. Efficiency is maximized if the same cache items are used multiple times.
+First off, processors use \vocab{caching}, which is a method of keeping copies of recently accessed memory locations in fast storage. Consequently, future requests for that data are served up faster than is possible by accessing the data's primary storage location. Efficiency is maximized if the same cache items are used multiple times. Two principles of locality used by computer architecture when performing caching are listed below: \begin{enumerate}
+    \item One of the two principles is based on \vocab{temporal locality}. This principle states that recently referenced items are likely to be referenced again in the near future.
+    \item The second principle is based on \vocab{spatial locality}. This principle states that items with nearby addresses tend to be referenced close together in time (like items in an array).
+\end{enumerate}
+
 
 Next, processors perform \vocab{pipelining}, which allow parts of multiple instructions to execute simultaneously. For example, the processor might start to decode one instruction while loading the next one from memory. Some superscalar processors can execute two or more instructions at once. Pipelining can further be optimized with \vocab{branch prediction}, which is a process by which the processor guesses which way a branch (e.g. a conditional statement) will go, ultimately allowing the pipeline to stay full. 
 
+When conducting efficiency measurements, typically we'll run the program a set number of times and take the mean of the $K$ fastest runs.When conducting these tests, it's important to have representative input samples. Why? Because some inefficient algorithms, like one that runs in $\mathcal{O}(n^2)$, might appear to be efficient for small values of $n$. 
+
+
+What are the sources of performance problems? There are a lot of reasons why some code might be inefficient. The following list names a few: \begin{enumerate}
+    \item I/O Operations that are too small. (e.g. it is inefficient to read a file one character at a time; it is much faster to read entire strings or lines at once).
+    \item Poor algorithm implementations. Using an $\mathcal{O}(n^2)$ (or worse) algorithm is bad when $n$ is large.
+    \item Caching memory that isn't reused. 
+\end{enumerate}
+
+Optimization is not about algorithms but rather how to convert algorithms into efficient code and how to refine code to make it run faster. 
+
+
+Compilers can be told to ``optimize" your code. In gcc, the \verb!-O! flag enables the optimizer, which makes modifications to the compiled program wherever possible. Optimization will \textbf{never} break your code; the actions taken by enabling the \verb!-O! flag will only be safe changes. However, optimizing code might reveal latent bugs. Naturally, there are some limits on compiler optimization. The compiler has a limited understanding of the program, and there is a need to compile programs quickly. 
+
+
+\subsection{Types of Optimizations}
+There are a few types techniques that compilers use to optimize code. Here, we'll discuss a few. 
+
+\subsubsection{Code Motion}
+The following example demonstrates one way in which the compiler can optimize a code segment.
+
+First, consider the original, pre-optimized code segment:
+
+\lstset{
+caption=Unoptimized Compiler Code
+}
+\begin{center}
+\lstinputlisting[language=c]{july29/july2901.c}
+\end{center}
+
+Now here's the compiler optimized equivalent:
+
+\lstset{
+caption=Optimized Compiler Code
+}
+\begin{center}
+\lstinputlisting[language=c]{july29/july2902.c}
+\end{center}
+
+Why is this faster? In the original code, it's unnecessary to repeatedly multiply \verb!j! and \verb!k! since they're constant values. Likewise, it's unnecessary to keep on multiplying \verb!2! and \verb!j!. It's also important to remember that the compiler \textbf{automatically does this for us}. This second code segment is just showing how the compiler could potentially be interpreting this code. 
+
+This type of optimization (e.g. using variables to store repeatedly used constant values) is known as \vocab{code motion}. Another good example is here\footnote{\url{https://stackoverflow.com/questions/5607762/what-does-code-motion-mean-for-loop-invariant-code-motion}}.
+
+
+\subsubsection{Loop Unrolling}
+\vocab{Loop unrolling} is a type of processor optimization which allows for the contents of a loop body to be executed faster.
+
+Here's an unoptimized code segment:
+
+\lstset{
+caption=Unoptimized Compiler Code
+}
+\begin{center}
+\lstinputlisting[language=c]{july29/july2903.c}
+\end{center}
+
+A post-optimized equivalent might look something like this:
+
+\lstset{
+caption=Optimized Compiler Code
+}
+\begin{center}
+\lstinputlisting[language=c]{july29/july2904.c}
+\end{center}
+
+We've ``unrolled" the loop and now we only perform half the number of iterations. Why is this faster than the unoptimized segment? Because, as previously mentioned, modern processors can perform several parts of instructions simultaneously. 
+
+\subsubsection{Dead Code Elimination and Other}
+
+This is really simple, so there's no example. Pretty much, the compiler will eliminate chunks of code that never get executed. So, if we added had something like, \verb!if (false) { .... .... }!, the compiler wouldn't need to look at that. This is called \vocab{dead code elimination}.
+
+
+We should also attempt to reduce the number of function calls we have since it takes time. This can be done by eliminating short functions (like, one line functions), and replacing them with parametrized macros (\verb!#DEFINE!) or \vocab{inline functions} (with the \verb!inline! keyword in C), which are used to tell the compiler that the function is a short one.
+
+
+
+\subsection{Amdahl's Law}
+
+\vocab{Amdahl's Law} is a formula which gives the theoretical speedup of a task that can be expected of a system whose resources are improved. 
+
+Let $T$ denote the execution time of a program. Now suppose we have a function that takes $\alpha$ fraction (so we have $0 \leq \alpha \leq 1$) of the program execution time, and we can make this function $k$ times faster. Then, the following equality holds: \begin{equation*}
+T_{new} = (1 - \alpha)T_{old} + (\alpha T_{old})/k.
+\end{equation*}
+
+To get a better understanding of what this equation is saying, let's look at the edge cases: \begin{itemize}
+    \item If we have a function that occupies the entire runtime of a program (that is, $\alpha = 1$), then we'll simply have $T_{new} = T_{old}/k$, which makes sense if we're making the function $k$ times faster.
+    \item If we have a function that occupies none of the runtime of a program (that is, $\alpha = 0$), then we'll have $T_{new} = T_{old}$ since making the function faster won't do anything if our program never executes it. 
+\end{itemize}
