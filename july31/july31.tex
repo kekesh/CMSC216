@@ -1,0 +1,62 @@
+\section{Wednesday, July 31, 2019}
+Recall that two-dimensional arrays in C are layed out in row-major order. Thus, it's more efficient to process a 2D array row-by-row (instead of column-by-column) in order to efficiently use the cache.
+
+
+\subsection{Memoization}
+
+Another optimization technique is to store intermediate values in computationally difficult tasks. This is known as \vocab{memoization}. The classical example is computing Fibonacci numbers using DP:
+
+
+\lstset{
+caption=DP Fibonacci 
+}
+\begin{center}
+\lstinputlisting[language=c]{july31/july3101.c}
+\end{center}
+
+Without memoization, a recursive Fibonacci function runs in $\mathcal{O}(\phi^{n})$, which is really bad. To do better, once we've computed a Fibonacci number, the number is stored for later use in the static array \verb!table!. Since the variable is static, the variable will be shared with subsequent function calls. This reduces the number of recursive calls made when we use the function a lot.
+
+
+\subsection{Parametrized Macros}
+
+We've already seen that we can use \verb!#define! to blindly substitute text in one place to another. However, \verb!#define! can also be used to create \vocab{parametrized macros} where parameters are substituted along with the text substitution.
+
+The general syntax for a parametrized macro is \verb!#define(parameter-list) text!. 
+
+As an example, consider the macro \verb!#define SUM(a, b) a + b!. We could then write something like \verb!x = SUM(2, 6)!, and it would blindly substitute this text to become \verb!x = 2 + 6!. Long parametrized macros can be extended to a new line using a backslash.
+
+
+It is important to be careful with parametrized macros since they are essentially just substituting text. In particular, we need to pay attention to the precedence of operators as well as issues with post and pre-incrementation. 
+
+Let's look at an example in which a parametrized macro might fail to do what we want it to do:
+
+The macro \verb!#define SQUARE1(x) x * x! will fail when we call the macro with \verb!SQUARE1(5 + 1)!. While we might want the answer to be $36$, the preprocessor will instead perform a blind substitution, and we will compute $5 + 1 \cdot 5 + 1 = 11$. The solution is to change the parametrized macro to \verb!#define SQUARE2(x) (x) * (x)!.
+
+
+Below are a few important things to remember about parametrized macros: \begin{enumerate}
+    \item Macros are textually replaced. Consequently, they are much faster than function calls, which have overhead.
+    \item Macros cannot be recursive.
+    \item Macros cannot be type-checked by the preprocessor.
+    \item Macros might result in difficult bugs.
+\end{enumerate}
+
+
+\subsection{Virtual Memory}
+
+A computer has \vocab{virtual memory} and \vocab{physical memory} which are of importance when writing code. Virtual memory can be thought of as our entire memory space, which ultimately gives the programmer an illusion of having infinite memory. On the other hand, the physical memory space contains memory addresses that are actively being used.
+
+For instance, a programmer is using data (i.e. creating a variable), parts of the virtual memory is mapped to physical memory, where the data is stored. For this reason, virtual memory is typically larger than physical memory.
+
+These concepts of physical and virtual memory explain why when we call \verb!fork()! on a program in C, the memory addresses of the child and parent processes are initially the same. The reason why is that the child has not been mapped to a physical memory address space yet. 
+
+\subsection{Signals}
+
+Nelson says that we don't need to write code with signals on the final, but we need to understand signals conceptually.
+
+
+A \vocab{signal} is a method of communication between two or more processes. There are many ways to send signals, some of which are listed below: \begin{itemize}
+    \item We can send signals via the keyboard. The \verb!CTRL + C! and \verb!CTRL + Z! send the \verb!SIGINT! (terminate process) and \verb!SIGTSTP! (suspend process execution) signals, respectively. 
+    \item The \verb!kill! command in Unix can be used to send signal to a process to terminate it.
+    \item Software errors can also produce signals. For example, if we get a segmentation fault, a \verb!SIGSEGV! signal is sent in order to indicate a segmentation violation. 
+    \item The \verb!SIGCHLD! signal is sent to a parent process when the child process terminates.
+\end{itemize}
